@@ -8,7 +8,7 @@ interface Props {
   description: string;
   og?: string;
   /** Section of the site, for the nav. */
-  current?: 'home' | 'aroma' | 'hospitality' | 'technology' | 'brief' | 'contact' | 'none';
+  current?: 'home' | 'aroma' | 'hospitality' | 'technology' | 'shop' | 'brief' | 'contact' | 'none';
   /** Page accent (division colour). */
   accent?: string;
   minimal?: boolean;
@@ -21,6 +21,7 @@ const nav = [
   { id: 'aroma', href: '/aroma', label: 'Aroma', color: 'var(--aroma)' },
   { id: 'hospitality', href: '/hospitality', label: 'Hospitality', color: 'var(--hospitality)' },
   { id: 'technology', href: '/technology', label: 'Technology', color: 'var(--technology)' },
+  { id: 'shop', href: '/shop', label: 'Shop' },
   { id: 'contact', href: '/contact', label: 'Contact' },
 ];
 ---
@@ -67,7 +68,6 @@ const nav = [
         </nav>
       )}
       <div class="nav-actions">
-        <a class="btn btn-sm btn-line shop-link" href={company.store.shop} rel="noopener">Shop online <span class="ext" aria-hidden="true">↗</span></a>
         <a class="btn btn-sm brief-pill" href="/brief" aria-current={current === 'brief' ? 'page' : undefined}>
           Brief <span class="brief-count" data-brief-count aria-label="items in your brief">0</span>
         </a>
@@ -81,7 +81,7 @@ const nav = [
     ))}
     <a class="mm" href="/brief"><span>Your brief</span><span class="label label-muted" data-brief-count-text>0 items</span></a>
     <div class="mm-foot">
-      <a class="btn" href={company.store.shop} rel="noopener">Shop oils &amp; diffusers <span class="ext" aria-hidden="true">↗</span></a>
+      <a class="btn" href="/shop">Shop oils &amp; diffusers</a>
       <a class="btn btn-line" href={company.phone.href}>Call {company.phone.display}</a>
     </div>
   </div>
@@ -106,7 +106,8 @@ const nav = [
         <div>
           <h2>Order &amp; enquire</h2>
           <ul>
-            <li><a href={company.store.shop} rel="noopener">Online store ↗</a></li>
+            <li><a href="/shop">Shop oils &amp; diffusers</a></li>
+            <li><a href={company.store.shop} rel="noopener">Global Aroma store ↗</a></li>
             <li><a href="/aroma#library">Scent collection</a></li>
             <li><a href="/brief">Build a brief</a></li>
             <li><a href="/contact">Contact</a></li>

@@ -1,0 +1,40 @@
+{
+  "$comment": "Every social asset and Open Graph card, rendered from the site's own engine by `npm run social`. Change a scent slug or a line of copy here and re-render. See docs/05-social-kit.md.",
+  "frames": [
+    { "id": "ig-carousel-1", "type": "carousel-cover", "w": 1080, "h": 1350, "safe": "feed", "scent": "arabic-coffee" },
+    { "id": "ig-carousel-2", "type": "carousel-anatomy", "w": 1080, "h": 1350, "safe": "feed", "scent": "arabic-coffee" },
+    { "id": "ig-carousel-3", "type": "carousel-accords", "w": 1080, "h": 1350, "safe": "feed", "scents": ["green-fig-leaves", "frangipani", "leather-bouquet", "gingerbread-delight"] },
+    { "id": "ig-carousel-4", "type": "carousel-map", "w": 1080, "h": 1350, "safe": "feed" },
+    { "id": "ig-carousel-5", "type": "carousel-end", "w": 1080, "h": 1350, "safe": "feed" },
+
+    { "id": "ig-post-arabic-coffee", "type": "scent-post", "w": 1080, "h": 1350, "safe": "feed", "scent": "arabic-coffee" },
+    { "id": "ig-post-frangipani", "type": "scent-post", "w": 1080, "h": 1350, "safe": "feed", "scent": "frangipani" },
+    { "id": "ig-post-green-fig-leaves", "type": "scent-post", "w": 1080, "h": 1350, "safe": "feed", "scent": "green-fig-leaves" },
+    { "id": "ig-post-divisions", "type": "divisions-post", "w": 1080, "h": 1350, "safe": "feed" },
+
+    { "id": "reel-cover-scent", "type": "reel-cover", "w": 1080, "h": 1920, "safe": "reel", "series": "Scent of the week", "scent": "royal-residence" },
+    { "id": "reel-cover-hospitality", "type": "reel-cover-division", "w": 1080, "h": 1920, "safe": "reel", "division": "hospitality", "title": "Inside a guest room" },
+    { "id": "reel-cover-technology", "type": "reel-cover-division", "w": 1080, "h": 1920, "safe": "reel", "division": "technology", "title": "Screens that welcome guests" },
+
+    { "id": "story-new-scent", "type": "story-scent", "w": 1080, "h": 1920, "safe": "story", "scent": "white-beach" },
+    { "id": "story-ask", "type": "story-ask", "w": 1080, "h": 1920, "safe": "story" },
+
+    { "id": "highlight-aroma", "type": "highlight", "w": 1080, "h": 1920, "safe": "highlight", "icon": "aroma", "label": "Aroma" },
+    { "id": "highlight-hospitality", "type": "highlight", "w": 1080, "h": 1920, "safe": "highlight", "icon": "hospitality", "label": "Hospitality" },
+    { "id": "highlight-technology", "type": "highlight", "w": 1080, "h": 1920, "safe": "highlight", "icon": "technology", "label": "Technology" },
+    { "id": "highlight-scents", "type": "highlight", "w": 1080, "h": 1920, "safe": "highlight", "icon": "scents", "label": "Scents" },
+    { "id": "highlight-contact", "type": "highlight", "w": 1080, "h": 1920, "safe": "highlight", "icon": "contact", "label": "Contact" },
+
+    { "id": "linkedin-post", "type": "linkedin-post", "w": 1200, "h": 1200, "safe": "none" },
+    { "id": "linkedin-banner", "type": "linkedin-banner", "w": 1584, "h": 396, "safe": "linkedin-banner" },
+
+    { "id": "og-default", "type": "og", "w": 1200, "h": 630, "safe": "none", "page": "home", "out": "public/og/default.png" },
+    { "id": "og-home", "type": "og", "w": 1200, "h": 630, "safe": "none", "page": "home", "out": "public/og/home.png" },
+    { "id": "og-aroma", "type": "og", "w": 1200, "h": 630, "safe": "none", "page": "aroma", "out": "public/og/aroma.png" },
+    { "id": "og-hospitality", "type": "og", "w": 1200, "h": 630, "safe": "none", "page": "hospitality", "out": "public/og/hospitality.png" },
+    { "id": "og-technology", "type": "og", "w": 1200, "h": 630, "safe": "none", "page": "technology", "out": "public/og/technology.png" }
+  ],
+  "reels": [
+    { "id": "reel-signature-arabic-coffee", "scent": "arabic-coffee", "seconds": 12, "fps": 30 }
+  ]
+}

@@ -1,0 +1,366 @@
+---
+/**
+ * Social studio (unlisted, noindex). Renders every frame in
+ * src/social/plan.json at its exact platform size using the site's own
+ * signature, pattern and field engines. `npm run social` screenshots each
+ * frame to social/out/ (and the OG cards to public/og/).
+ * Add ?safe to see platform safe zones.
+ */
+import '../../styles/global.css';
+import plan from '../../social/plan.json';
+import { scentBySlug, scents } from '../../lib/library';
+import { signatureSVG } from '../../lib/signature';
+import { pattern } from '../../lib/patterns';
+import { fieldSVG } from '../../lib/flowfield';
+import { ACCORD_LABEL, PIGMENT } from '../../lib/accords';
+import { divisionById } from '../../data/divisions';
+import { formatAED } from '../../data/diffusers';
+
+type F = (typeof plan.frames)[number] & Record<string, any>;
+const frames = plan.frames as F[];
+const HEX: Record<string, string> = { aroma: '#b4612a', hospitality: '#3e5c50', technology: '#3149b0' };
+const sig = (slug: string, size: number, hair = 2.4, extra: Record<string, unknown> = {}) => signatureSVG(scentBySlug[slug], { size, hairline: hair, ...extra });
+const markSVG = (c = '#1a1714', s = 56) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none"><path d="M20.6 3.4c9.3.2 16.2 7.1 16 16.6-.2 9.4-7.6 16.6-17 16.4C10.4 36.2 3.4 29.3 3.5 20.2 3.7 10.8 11.3 3.2 20.6 3.4Z" stroke="${c}" stroke-width="1.4"/><path d="M19.3 9.6c6.4.1 11 4.9 10.8 11.1-.1 6.1-5 10.7-11.2 10.6-6-.2-10.4-4.8-10.3-10.6.1-6.3 4.8-11.2 10.7-11.1Z" stroke="${c}" stroke-width="1.4"/><path d="M17.9 15.4c3 .1 5.2 2.4 5.1 5.3 0 2.9-2.4 5-5.3 5-2.8-.1-4.9-2.3-4.8-5.1 0-2.9 2.2-5.3 5-5.2Z" stroke="${c}" stroke-width="1.4"/><circle cx="16.6" cy="20.6" r="1.6" fill="${c}"/></svg>`;
+const fieldSm = fieldSVG(1200, 630, 22);
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Social studio — Global Aroma (concept)</title>
+</head>
+<body class="studio">
+  <header class="studio-head">
+    <h1>Social studio</h1>
+    <p>{frames.length} frames from <code>src/social/plan.json</code>. Rendered by <code>npm run social</code>. <a href="?safe">Show safe zones</a> · <a href="?">Hide</a></p>
+  </header>
+  <div class="studio-grid">
+    {frames.map((f) => {
+      const s = f.scent ? scentBySlug[f.scent] : null;
+      return (
+        <figure class="studio-item">
+          <figcaption>{f.id} · {f.w}×{f.h}</figcaption>
+          <div class="frame-scale" style={`--w:${f.w};--h:${f.h}`}>
+            <section class:list={['frame', `t-${f.type}`]} id={f.id} data-frame data-safe={f.safe} style={`width:${f.w}px;height:${f.h}px`}>
+
+              {f.type === 'carousel-cover' && s && (<>
+                <div class="fx-top"><span class="fx-brand" set:html={markSVG() + '<span>Global Aroma</span>'} /><span class="fx-mono">01 / 05</span></div>
+                <div class="cc-sig" set:html={sig(s.slug, 980, 2.6)} />
+                <h2 class="fx-serif cc-h">Every scent<br />has a shape.</h2>
+                <p class="fx-mono cc-swipe">Swipe to read one →</p>
+              </>)}
+
+              {f.type === 'carousel-anatomy' && s && (<>
+                <div class="fx-top"><span class="fx-mono">How to read a signature</span><span class="fx-mono">02 / 05</span></div>
+                <div class="an-sig" set:html={sig(s.slug, 760, 2.6)} />
+                <ul class="an-keys">
+                  <li><span class="fx-mono k">Top · outside</span><span class="fx-serif v">{s.top.join(', ')}</span></li>
+                  <li><span class="fx-mono k">Heart · middle</span><span class="fx-serif v">{s.heart.join(', ')}</span></li>
+                  <li><span class="fx-mono k">Base · centre</span><span class="fx-serif v">{s.base.join(', ')}</span></li>
+                </ul>
+                <p class="an-foot"><span class="fx-serif">{s.title}</span><span class="fx-mono">One line per note. The rings drift like a scent through a room.</span></p>
+              </>)}
+
+              {f.type === 'carousel-accords' && (<>
+                <div class="fx-top"><span class="fx-mono">Colour is the accord</span><span class="fx-mono">03 / 05</span></div>
+                <div class="ac-grid">
+                  {(f.scents as string[]).map((slug) => { const x = scentBySlug[slug]; return (
+                    <div class="ac-cell"><div class="ac-sig" set:html={sig(slug, 420, 2.2)} /><p class="fx-serif ac-n">{x.title}</p><p class="ac-a">{x.dominant.slice(0, 2).map((a) => <span><i style={`background:${PIGMENT[a]}`} />{ACCORD_LABEL[a]}</span>)}</p></div>
+                  ); })}
+                </div>
+                <p class="fx-serif ac-h">Green, floral, amber, gourmand. You can see the difference before you smell it.</p>
+              </>)}
+
+              {f.type === 'carousel-map' && (<>
+                <div class="fx-top"><span class="fx-mono">The collection</span><span class="fx-mono">04 / 05</span></div>
+                <h2 class="fx-serif mp-h">{scents.length} fragrances,<br />mapped by feel.</h2>
+                <div class="mp-plane">
+                  <div class="mp-in">{scents.map((x) => <i style={`left:${x.x * 100}%;top:${x.y * 100}%;background:color-mix(in srgb, ${PIGMENT[x.dominant[0]]} 75%, white)`} />)}</div>
+                  <span class="fx-mono mp-l mp-tl">Floral</span><span class="fx-mono mp-l mp-bl">Woody</span>
+                </div>
+                <p class="fx-mono mp-x"><span>← Fresh</span><span>Warm →</span></p>
+              </>)}
+
+              {f.type === 'carousel-end' && (<>
+                <div class="ce-field" set:html={fieldSVG(1080, 900, 24)} />
+                <div class="fx-top"><span class="fx-brand" set:html={markSVG('#f2eee7') + '<span>Global Aroma</span>'} /><span class="fx-mono">05 / 05</span></div>
+                <h2 class="fx-serif ce-h">Find the one<br />for your space.</h2>
+                <p class="ce-sub">Explore the collection, order diffuser oils online, or ask us for a signature scent.</p>
+                <p class="fx-mono ce-link">globalaroma.me · link in bio</p>
+              </>)}
+
+              {f.type === 'scent-post' && s && (<>
+                <div class="fx-top"><span class="fx-brand" set:html={markSVG() + '<span>Global Aroma</span>'} /><span class="fx-mono">{s.family}</span></div>
+                <div class="sp-sig" set:html={sig(s.slug, 700, 2.6)} />
+                <h2 class="fx-serif sp-n">{s.title}</h2>
+                <dl class="sp-notes">
+                  <div><dt class="fx-mono">Top</dt><dd>{s.top.join(', ')}</dd></div>
+                  <div><dt class="fx-mono">Heart</dt><dd>{s.heart.join(', ')}</dd></div>
+                  <div><dt class="fx-mono">Base</dt><dd>{s.base.join(', ')}</dd></div>
+                </dl>
+                <p class="fx-mono sp-foot"><span>{s.store ? `Diffuser oil · from ${formatAED(s.store.price)}` : 'Ask for formats and volumes'}</span><span>globalaroma.me</span></p>
+              </>)}
+
+              {f.type === 'divisions-post' && (<>
+                <div class="fx-top"><span class="fx-brand" set:html={markSVG() + '<span>Global DWC LLC</span>'} /><span class="fx-mono">Dubai World Central</span></div>
+                <h2 class="fx-serif dp-h">One line,<br />drawn three ways.</h2>
+                <div class="dp-bands">
+                  {(['aroma', 'hospitality', 'technology'] as const).map((d) => { const dv = divisionById[d]; return (
+                    <div class="dp-band" style={`--c:${HEX[d]}`}>
+                      <div class="dp-art" set:html={pattern(dv.behaviour, { w: 920, h: 170, seed: d + '-dp', accent: HEX[d], lines: dv.behaviour === 'weave' ? 6 : 9, width: 1.6 })} />
+                      <p><span class="fx-serif">{dv.name}</span><span class="fx-mono">{dv.kicker}</span></p>
+                    </div>
+                  ); })}
+                </div>
+              </>)}
+
+              {f.type === 'reel-cover' && s && (<>
+                <p class="fx-mono rc-series">{f.series}</p>
+                <div class="rc-sig" set:html={sig(s.slug, 820, 2.8)} />
+                <h2 class="fx-serif rc-n">{s.title}</h2>
+                <p class="fx-mono rc-f">{s.family}</p>
+                <span class="rc-brand" set:html={markSVG('#1a1714', 64)} />
+              </>)}
+
+              {f.type === 'reel-cover-division' && (() => { const dv = divisionById[f.division as 'hospitality']; return (<>
+                <div class="rd-art" set:html={pattern(dv.behaviour, { w: 1080, h: 1920, seed: f.division + '-reel', accent: HEX[f.division], lines: dv.behaviour === 'weave' ? 22 : 30, width: 1.8 })} />
+                <div class="rd-card" style={`--c:${HEX[f.division]}`}>
+                  <p class="fx-mono">{dv.name}</p>
+                  <h2 class="fx-serif">{f.title}</h2>
+                </div>
+              </>); })()}
+
+              {f.type === 'story-scent' && s && (<>
+                <p class="fx-mono st-k">New in the collection</p>
+                <div class="st-sig" set:html={sig(s.slug, 860, 2.8)} />
+                <h2 class="fx-serif st-n">{s.title}</h2>
+                <p class="st-notes">{s.top.slice(0, 3).join(' · ')}</p>
+                <p class="fx-mono st-cta">{s.store ? 'Shop the oil · link below' : 'Ask us · link below'}</p>
+                <div class="sticker-zone">Link sticker</div>
+              </>)}
+
+              {f.type === 'story-ask' && (<>
+                <div class="sa-field" set:html={fieldSVG(1080, 900, 24)} />
+                <p class="fx-mono st-k">Ask Global Aroma</p>
+                <h2 class="fx-serif sa-h">What should your lobby smell like?</h2>
+                <p class="sa-sub">Tell us the space. We’ll suggest three scents from the collection.</p>
+                <div class="sticker-zone sa-sticker">Question sticker</div>
+              </>)}
+
+              {f.type === 'highlight' && (<>
+                <div class="hl-disc">
+                  {f.icon === 'aroma' && <div class="hl-i" set:html={signatureSVG(scentBySlug['frangipani'], { size: 520, mode: 'ink', ink: '#f2eee7', hairline: 3.6 })} />}
+                  {f.icon === 'hospitality' && <div class="hl-i hl-p" set:html={pattern('weave', { w: 520, h: 520, seed: 'hl-h', lines: 8, stroke: '#f2eee7', accent: '#9fc2b2', width: 3.2 })} />}
+                  {f.icon === 'technology' && <div class="hl-i hl-p" set:html={pattern('signal', { w: 520, h: 520, seed: 'hl-t', lines: 8, stroke: '#f2eee7', accent: '#9fb0f2', width: 3.2 })} />}
+                  {f.icon === 'scents' && <div class="hl-i hl-dots">{scents.filter((_, i) => i % 2 === 0).map((x) => <i style={`left:${x.x * 100}%;top:${x.y * 100}%;background:color-mix(in srgb, ${PIGMENT[x.dominant[0]]} 60%, white)`} />)}</div>}
+                  {f.icon === 'contact' && <div class="hl-i hl-mark" set:html={markSVG('#f2eee7', 420)} />}
+                </div>
+                <p class="fx-mono hl-l">{f.label}</p>
+              </>)}
+
+              {f.type === 'linkedin-post' && (<>
+                <div class="lp-field" set:html={fieldSVG(1200, 700, 26)} />
+                <div class="fx-top"><span class="fx-brand" set:html={markSVG() + '<span>Global DWC LLC</span>'} /><span class="fx-mono">Dubai World Central</span></div>
+                <h2 class="fx-serif lp-h">Scent, hospitality and technology. One team in Dubai.</h2>
+                <ul class="lp-divs">{(['aroma', 'hospitality', 'technology'] as const).map((d) => <li style={`--c:${HEX[d]}`}><i />{divisionById[d].name}<span class="fx-mono">{divisionById[d].kicker}</span></li>)}</ul>
+              </>)}
+
+              {f.type === 'linkedin-banner' && (<>
+                <div class="lb-field" set:html={fieldSVG(1584, 396, 22)} />
+                <div class="lb-word"><span set:html={markSVG('#1a1714', 64)} /><span><b class="fx-serif">Global Aroma</b><span class="fx-mono">Scent · Hospitality · Technology</span></span></div>
+              </>)}
+
+              {f.type === 'og' && (<>
+                {f.page === 'home' && <div class="og-field" set:html={fieldSm} />}
+                {f.page === 'aroma' && <div class="og-sig" set:html={sig('arabic-coffee', 560, 2.2)} />}
+                {(f.page === 'hospitality' || f.page === 'technology') && <div class="og-art" set:html={pattern(f.page === 'hospitality' ? 'weave' : 'signal', { w: 560, h: 630, seed: f.page + '-og', accent: HEX[f.page], lines: f.page === 'hospitality' ? 11 : 16, width: 1.5 })} />}
+                <div class="og-copy">
+                  <span class="fx-brand" set:html={markSVG('#1a1714', 44) + '<span>Global Aroma</span>'} />
+                  <h2 class="fx-serif">{f.page === 'home' ? 'How a space feels.' : f.page === 'aroma' ? '67 fragrances, mapped by feel.' : divisionById[f.page as 'hospitality'].statement}</h2>
+                  <p class="fx-mono">{f.page === 'home' ? 'Scent · Hospitality · Technology · Dubai' : divisionById[f.page as 'aroma'].name}</p>
+                </div>
+                <span class="og-concept fx-mono">Concept preview</span>
+              </>)}
+
+              <div class="safe" aria-hidden="true" />
+            </section>
+          </div>
+        </figure>
+      );
+    })}
+  </div>
+</body>
+</html>
+
+<script is:inline>
+  if (location.search.includes('safe')) document.body.classList.add('show-safe');
+  // Fit frames to the gallery; the renderer uses the unscaled frames.
+  document.querySelectorAll('.frame-scale').forEach((el) => {
+    const w = +getComputedStyle(el).getPropertyValue('--w');
+    const s = el.clientWidth / w;
+    el.style.setProperty('--s', s);
+  });
+</script>
+
+<style is:global>
+  .studio { background: #d9d3c8; padding: 2rem; }
+  .studio-head { margin-bottom: 2rem; font-family: var(--f-sans); }
+  .studio-head h1 { font-family: var(--f-serif); font-size: 2.5rem; }
+  .studio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; align-items: start; }
+  .studio-item { margin: 0; }
+  .studio-item figcaption { font-family: var(--f-mono); font-size: 0.72rem; margin-bottom: 0.4rem; }
+  .frame-scale { --s: 0.27; width: 100%; height: calc(var(--h) * var(--s) * 1px); position: relative; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+  .frame-scale > .frame { transform: scale(var(--s)); transform-origin: 0 0; position: absolute; top: 0; left: 0; }
+  body.render { padding: 0; background: #000; }
+  body.render .studio-head, body.render figcaption { display: none; }
+  body.render .frame-scale { width: auto !important; height: auto !important; box-shadow: none; overflow: visible; }
+  body.render .frame-scale > .frame { transform: none; position: relative; }
+  body.render .studio-grid { display: block; }
+
+  .frame { position: relative; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--f-sans); --m: 80px; }
+  .fx-serif { font-family: var(--f-serif); font-optical-sizing: auto; letter-spacing: -0.025em; font-weight: 400; }
+  .fx-mono { font-family: var(--f-mono); font-size: 26px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
+  .fx-top { position: absolute; top: var(--m); left: var(--m); right: var(--m); display: flex; justify-content: space-between; align-items: center; z-index: 2; }
+  .fx-brand { display: inline-flex; align-items: center; gap: 18px; font-weight: 640; font-size: 32px; letter-spacing: 0.01em; }
+  .frame h2 { margin: 0; }
+  .frame p { margin: 0; }
+
+  /* safe zones (studio only) */
+  .safe { position: absolute; inset: 0; pointer-events: none; display: none; z-index: 10; }
+  .show-safe .safe { display: block; }
+  [data-safe='feed'] .safe { box-shadow: inset 34px 0 0 rgba(255,0,0,0.18), inset -34px 0 0 rgba(255,0,0,0.18); }
+  [data-safe='reel'] .safe { background: linear-gradient(rgba(255,0,0,0.2) 0 220px, transparent 220px calc(100% - 420px), rgba(255,0,0,0.2) calc(100% - 420px)); outline: 4px dashed rgba(0,0,255,0.5); outline-offset: -4px; }
+  [data-safe='reel'] .safe::after { content: ''; position: absolute; left: 0; right: 0; top: 240px; height: 1440px; border: 4px solid rgba(0,0,255,0.6); }
+  [data-safe='reel'] .safe::before { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 140px; background: rgba(255,0,0,0.14); }
+  [data-safe='story'] .safe { background: linear-gradient(rgba(255,0,0,0.2) 0 250px, transparent 250px calc(100% - 340px), rgba(255,0,0,0.2) calc(100% - 340px)); }
+  [data-safe='highlight'] .safe::after { content: ''; position: absolute; left: 50%; top: 50%; width: 620px; height: 620px; margin: -310px 0 0 -310px; border-radius: 50%; border: 4px solid rgba(0,0,255,0.6); }
+  [data-safe='linkedin-banner'] .safe { background: linear-gradient(90deg, rgba(255,0,0,0.2) 0 568px, transparent 568px); }
+  .sticker-zone { display: none; }
+  .show-safe .sticker-zone { display: grid; place-items: center; position: absolute; border: 4px dashed rgba(0,0,255,0.5); font-family: var(--f-mono); font-size: 24px; color: rgba(0,0,255,0.7); }
+
+  /* carousel cover */
+  .cc-sig { position: absolute; right: -170px; top: 150px; width: 980px; height: 980px; }
+  .cc-h { position: absolute; left: var(--m); bottom: 190px; font-size: 128px; line-height: 0.95; }
+  .cc-swipe { position: absolute; left: var(--m); bottom: var(--m); color: var(--ink-56); }
+
+  .an-sig { position: absolute; left: 50%; top: 170px; width: 760px; height: 760px; margin-left: -380px; }
+  .an-keys { position: absolute; left: var(--m); right: var(--m); bottom: 230px; border-top: 2px solid var(--ink); }
+  .an-keys li { display: grid; grid-template-columns: 300px 1fr; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--ink-16); align-items: baseline; }
+  .an-keys .k { font-size: 22px; color: var(--ink-56); }
+  .an-keys .v { font-size: 34px; line-height: 1.2; letter-spacing: -0.01em; }
+  .an-foot { position: absolute; left: var(--m); right: var(--m); bottom: var(--m); display: grid; gap: 8px; }
+  .an-foot .fx-serif { font-size: 44px; }
+  .an-foot .fx-mono { font-size: 20px; color: var(--ink-56); text-transform: none; letter-spacing: 0.02em; }
+
+  .t-carousel-accords { background: var(--paper-2); }
+  .ac-grid { position: absolute; top: 160px; left: var(--m); right: var(--m); display: grid; grid-template-columns: 1fr 1fr; gap: 28px 40px; }
+  .ac-sig { width: 100%; aspect-ratio: 1.3; padding: 22px; background: var(--paper); }
+  .ac-sig svg { width: 100%; height: 100%; }
+  .ac-n { font-size: 38px; margin-top: 12px !important; }
+  .ac-a { display: flex; gap: 18px; font-size: 22px; color: var(--ink-72); }
+  .ac-a span { display: inline-flex; align-items: center; gap: 8px; }
+  .ac-a i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+  .ac-h { position: absolute; left: var(--m); right: var(--m); bottom: var(--m); font-size: 44px; line-height: 1.12; border-top: 2px solid var(--ink); padding-top: 28px; }
+
+  .t-carousel-map { background: var(--ink); color: var(--paper); }
+  .t-carousel-map .fx-top { color: var(--p-56); }
+  .mp-h { position: absolute; left: var(--m); top: 180px; font-size: 96px; line-height: 0.98; }
+  .mp-plane { position: absolute; left: var(--m); right: var(--m); top: 460px; bottom: 170px; border: 1px solid var(--p-24); }
+  .mp-plane i { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; }
+  .mp-in { position: absolute; inset: 40px; }
+  .mp-l { position: absolute; left: 22px; font-size: 20px; color: var(--p-56); }
+  .mp-tl { top: 18px; } .mp-bl { bottom: 18px; }
+  .mp-x { position: absolute; left: var(--m); right: var(--m); bottom: 110px; display: flex; justify-content: space-between; font-size: 20px; color: var(--p-56); }
+
+  .t-carousel-end { background: var(--ink); color: var(--paper); }
+  .ce-field { position: absolute; left: 0; right: 0; bottom: 0; height: 640px; opacity: 0.9; }
+  .ce-field svg { width: 100%; height: 100%; }
+  .ce-field path[stroke='#1a1714'] { stroke: #f2eee7; }
+  .ce-h { position: absolute; left: var(--m); top: 220px; font-size: 120px; line-height: 0.95; }
+  .ce-sub { position: absolute; left: var(--m); top: 500px; width: 760px; font-size: 36px; line-height: 1.4; color: var(--p-72); }
+  .ce-link { position: absolute; left: var(--m); bottom: var(--m); color: var(--paper); }
+
+  .sp-sig { position: absolute; left: 50%; top: 150px; width: 700px; height: 700px; margin-left: -350px; }
+  .sp-n { position: absolute; left: var(--m); top: 860px; font-size: 96px; line-height: 1; }
+  .sp-notes { position: absolute; left: var(--m); right: var(--m); top: 990px; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; border-top: 2px solid var(--ink); padding-top: 20px; }
+  .sp-notes dt { font-size: 20px; color: var(--ink-56); margin-bottom: 8px; }
+  .sp-notes dd { margin: 0; font-size: 26px; line-height: 1.35; }
+  .sp-foot { position: absolute; left: var(--m); right: var(--m); bottom: var(--m); display: flex; justify-content: space-between; font-size: 22px; }
+
+  .dp-h { position: absolute; left: var(--m); top: 190px; font-size: 104px; line-height: 0.96; }
+  .dp-bands { position: absolute; left: var(--m); right: var(--m); bottom: var(--m); display: grid; gap: 34px; }
+  .dp-band { display: grid; gap: 14px; }
+  .dp-art { height: 170px; border: 1px solid var(--ink-16); overflow: hidden; }
+  .dp-art svg { width: 100%; height: 100%; }
+  .dp-band p { display: flex; justify-content: space-between; align-items: baseline; border-left: 6px solid var(--c); padding-left: 18px; }
+  .dp-band .fx-serif { font-size: 44px; }
+  .dp-band .fx-mono { font-size: 18px; color: var(--ink-56); }
+
+  .rc-series { position: absolute; top: 300px; left: var(--m); right: var(--m); text-align: center; font-size: 30px; }
+  .rc-sig { position: absolute; left: 50%; top: 400px; width: 820px; height: 820px; margin-left: -410px; }
+  .rc-n { position: absolute; left: var(--m); right: var(--m); top: 1250px; text-align: center; font-size: 120px; line-height: 1; }
+  .rc-f { position: absolute; left: 0; right: 0; top: 1400px; text-align: center; color: var(--ink-56); }
+  .rc-brand { position: absolute; left: 50%; top: 1530px; margin-left: -32px; }
+
+  .t-reel-cover-division { background: var(--paper-2); }
+  .rd-art { position: absolute; inset: 0; }
+  .rd-art svg { width: 100%; height: 100%; }
+  .rd-card { position: absolute; left: var(--m); right: var(--m); top: 760px; background: var(--paper); padding: 56px 56px 64px; border-top: 8px solid var(--c); display: grid; gap: 24px; }
+  .rd-card .fx-mono { color: var(--c); }
+  .rd-card h2 { font-size: 104px; line-height: 0.98; }
+
+  .st-k { position: absolute; top: 290px; left: var(--m); }
+  .st-sig { position: absolute; left: 50%; top: 380px; width: 860px; height: 860px; margin-left: -430px; }
+  .st-n { position: absolute; left: var(--m); right: var(--m); top: 1260px; font-size: 120px; line-height: 1; }
+  .st-notes { position: absolute; left: var(--m); top: 1400px; font-size: 34px; color: var(--ink-72); }
+  .st-cta { position: absolute; left: var(--m); top: 1470px; }
+  .sticker-zone { left: 240px; right: 240px; top: 1520px; height: 120px; }
+
+  .t-story-ask { background: var(--ink); color: var(--paper); }
+  .t-story-ask .st-k { color: var(--p-56); }
+  .sa-field { position: absolute; left: 0; right: 0; top: 1050px; height: 600px; }
+  .sa-field svg { width: 100%; height: 100%; }
+  .sa-field path[stroke='#1a1714'] { stroke: #f2eee7; }
+  .sa-h { position: absolute; left: var(--m); right: var(--m); top: 380px; font-size: 120px; line-height: 0.98; }
+  .sa-sub { position: absolute; left: var(--m); right: 160px; top: 800px; font-size: 40px; line-height: 1.35; color: var(--p-72); }
+  .sa-sticker { top: 1000px; height: 320px; left: 140px; right: 140px; }
+
+  .t-highlight { background: var(--ink); }
+  .hl-disc { position: absolute; left: 50%; top: 50%; width: 620px; height: 620px; margin: -310px 0 0 -310px; border-radius: 50%; display: grid; place-items: center; }
+  .hl-i { width: 520px; height: 520px; position: relative; }
+  .hl-i svg { width: 100%; height: 100%; }
+  .hl-p { border-radius: 50%; overflow: hidden; }
+  .hl-dots i { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; }
+  .hl-mark { display: grid; place-items: center; }
+  .hl-l { position: absolute; left: 0; right: 0; bottom: 520px; text-align: center; color: var(--p-56); font-size: 30px; display: none; }
+
+  .t-linkedin-post .fx-top { --m: 72px; }
+  .lp-field { position: absolute; left: 0; right: 0; bottom: 0; height: 700px; }
+  .lp-field svg { width: 100%; height: 100%; }
+  .lp-h { position: absolute; left: 72px; right: 72px; top: 200px; font-size: 92px; line-height: 1; }
+  .lp-divs { position: absolute; left: 72px; right: 72px; bottom: 72px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; background: color-mix(in srgb, var(--paper) 88%, transparent); padding-top: 22px; border-top: 2px solid var(--ink); }
+  .lp-divs li { display: grid; gap: 6px; font-family: var(--f-serif); font-size: 36px; letter-spacing: -0.015em; }
+  .lp-divs i { height: 4px; width: 60px; background: var(--c); display: block; margin-bottom: 8px; }
+  .lp-divs .fx-mono { font-size: 15px; color: var(--ink-56); }
+
+  .lb-field { position: absolute; inset: 0; }
+  .lb-field svg { width: 100%; height: 100%; }
+  .lb-word { position: absolute; right: 80px; top: 50%; transform: translateY(-50%); display: flex; gap: 22px; align-items: center; background: var(--paper); padding: 22px 30px; }
+  .lb-word b { display: block; font-size: 48px; font-weight: 400; line-height: 1; }
+  .lb-word .fx-mono { font-size: 16px; color: var(--ink-56); }
+
+  .t-og { background: var(--paper); }
+  .og-field { position: absolute; inset: 160px 0 0 0; }
+  .og-field svg { width: 100%; height: 100%; }
+  .og-sig { position: absolute; right: 30px; top: 35px; width: 560px; height: 560px; }
+  .og-art { position: absolute; right: 0; top: 0; width: 560px; height: 630px; background: var(--paper-2); border-left: 1px solid var(--ink-16); }
+  .og-art svg { width: 100%; height: 100%; }
+  .og-copy { position: absolute; left: 64px; top: 56px; width: 560px; display: grid; gap: 26px; }
+  .t-og:has(.og-field) .og-copy { width: 900px; }
+  .og-copy .fx-brand { font-size: 26px; gap: 14px; }
+  .og-copy h2 { font-size: 76px; line-height: 0.98; }
+  .og-copy .fx-mono { font-size: 18px; color: var(--ink-56); }
+  .og-concept { position: absolute; left: 64px; bottom: 44px; font-size: 14px; color: var(--ink-56); background: var(--paper); padding: 4px 8px; }
+</style>

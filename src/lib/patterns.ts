@@ -46,7 +46,7 @@ export function flow(o: Opts = {}): string {
       d += (s ? 'L' : 'M') + f(x) + ' ' + f(y);
     }
     const isA = i === acc && o.accent;
-    out += `<path d="${d}" stroke="${isA ? o.accent : o.stroke ?? 'currentColor'}" stroke-width="${isA ? (o.width ?? 1) * 1.6 : o.width ?? 1}" ${isA ? '' : 'opacity="0.55"'}/>`;
+    out += `<path ${isA ? 'class="acc" pathLength="1"' : ''} d="${d}" stroke="${isA ? o.accent : o.stroke ?? 'currentColor'}" stroke-width="${isA ? (o.width ?? 1) * 1.6 : o.width ?? 1}" ${isA ? '' : 'opacity="0.55"'}/>`;
   }
   return wrap(w, h, out);
 }
@@ -70,7 +70,7 @@ export function weave(o: Opts = {}): string {
       d += `M${f(x0)} ${f(yy(x0))}L${f((x0 + x1) / 2)} ${f(yy((x0 + x1) / 2))}L${f(x1)} ${f(yy(x1))}`;
     }
     const isA = i === acc && o.accent;
-    out += `<path d="${d}" stroke="${isA ? o.accent : o.stroke ?? 'currentColor'}" stroke-width="${isA ? (o.width ?? 1) * 1.6 : o.width ?? 1}" ${isA ? '' : 'opacity="0.6"'}/>`;
+    out += `<path ${isA ? 'class="acc" pathLength="1"' : ''} d="${d}" stroke="${isA ? o.accent : o.stroke ?? 'currentColor'}" stroke-width="${isA ? (o.width ?? 1) * 1.8 : o.width ?? 1}" ${isA ? '' : 'opacity="0.6"'}/>`;
   }
   // Warp (vertical): broken where it passes under the weft.
   let d = '';
@@ -106,8 +106,9 @@ export function signal(o: Opts = {}): string {
     d += `L${f(w)} ${f(y + lvl * amp)}`;
     const isA = i === acc && o.accent;
     out += `<path d="${d}" stroke="${isA ? o.accent : o.stroke ?? 'currentColor'}" stroke-width="${isA ? (o.width ?? 1) * 1.6 : o.width ?? 1}" ${isA ? '' : 'opacity="0.55"'}/>`;
+    // A pulse that travels along the accent line (animated in CSS where motion is allowed).
+    if (isA) out += `<path class="pulse" pathLength="1" d="${d}" stroke="${o.accent}" stroke-width="${(o.width ?? 1) * 3.2}" stroke-dasharray="0.06 0.94" stroke-dashoffset="0.4"/>`;
   }
-  // Node points where the accent line switches.
   return wrap(w, h, out);
 }
 

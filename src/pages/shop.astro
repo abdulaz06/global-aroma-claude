@@ -1,0 +1,212 @@
+---
+/**
+ * Shop: everything sold online, in one place. Purchases are completed on the
+ * existing WooCommerce store; this page is discovery and hand-off only
+ * (docs/07-commerce-and-orders.md).
+ */
+import Base from '../layouts/Base.astro';
+import DiffuserCard from '../components/DiffuserCard.astro';
+import AddButton from '../components/AddButton.astro';
+import ScentDialog from '../components/ScentDialog.astro';
+import { scents, clientScents } from '../lib/library';
+import { storeOnlyOils } from '../data/scents';
+import { diffusers, formatAED } from '../data/diffusers';
+import { company } from '../data/company';
+import { ACCORD_LABEL, PIGMENT } from '../lib/accords';
+
+const collectionOils = scents.filter((s) => s.store).sort((a, b) => a.title.localeCompare(b.title));
+const otherOils = [...storeOnlyOils].sort((a, b) => a.name.localeCompare(b.name));
+const title = (n: string) => n.toLowerCase().replace(/(^|[\s-])\S/g, (m) => m.toUpperCase());
+const priced = diffusers.filter((d) => d.price);
+const oilCount = collectionOils.length + otherOils.length;
+---
+<Base title="Shop oils and diffusers" description={`Order Global Aroma diffuser oils and aroma diffusers online: ${oilCount} oils and ${priced.length} priced diffusers, with checkout on the Global Aroma store.`} current="shop" og="aroma">
+  <section class="s-head">
+    <div class="wrap s-head-in">
+      <div>
+        <p class="label kicker" style="color:var(--aroma)">Shop</p>
+        <h1 class="hero-t">Order online.</h1>
+      </div>
+      <p class="lead">Everything Global Aroma sells online, in one place. Choose here, then check out securely on the Global Aroma store.</p>
+    </div>
+    <div class="wrap">
+      <ol class="how">
+        <li><span class="num">01</span><p><b>Choose</b> an oil or a diffuser below.</p></li>
+        <li><span class="num">02</span><p><b>Buy online ↗</b> opens that product in the Global Aroma store at globalaroma.me.</p></li>
+        <li><span class="num">03</span><p><b>Check out</b> there: pick the volume, pay and add delivery details.</p></li>
+        <li class="how-q"><span class="num">—</span><p>Buying for a hotel, office or several sites? <a href="/brief">Request a quote</a> instead.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <nav class="s-tabs" aria-label="Shop sections">
+    <div class="wrap s-tabs-in">
+      <a href="#oils">Diffuser oils <span class="num">{oilCount}</span></a>
+      <a href="#diffusers">Diffusers <span class="num">{diffusers.length}</span></a>
+      <a href="#sampler">Scent box</a>
+      <a class="s-tabs-store" href={company.store.cart} rel="noopener">Your store cart ↗</a>
+    </div>
+  </nav>
+
+  <section class="section" id="oils" aria-labelledby="oils-h">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="sh-t"><p class="label label-muted kicker">Diffuser oils</p><h2 class="h1" id="oils-h">From the collection.</h2></div>
+        <p class="body-copy sh-d">{collectionOils.length} oils from the scent collection, each with its notes and signature. Volumes from 100 ml to 500 ml are chosen on the store; prices shown are the store’s starting prices.</p>
+      </div>
+      <div class="s-sort" data-sort-group="oils">
+        <span class="label label-muted">Sort</span>
+        <button class="chip" type="button" data-sort="name" aria-pressed="true">A–Z</button>
+        <button class="chip" type="button" data-sort="price" aria-pressed="false">Price</button>
+      </div>
+      <ul class="oils" data-sortable="oils">
+        {collectionOils.map((s) => (
+          <li class="oil" data-name={s.title} data-price={s.store!.price}>
+            <a class="oil-sig" href={`#scent-${s.slug}`} data-open-scent={s.slug} tabindex="-1" aria-hidden="true"><img src={`/sig/${s.slug}.svg`} alt="" width="400" height="400" loading="lazy" /></a>
+            <div class="oil-body">
+              <h3 class="oil-name"><a href={`#scent-${s.slug}`} data-open-scent={s.slug}>{s.title}</a></h3>
+              <p class="oil-fam">{s.dominant.slice(0, 2).map((a) => <span><i class="dot" style={`background:${PIGMENT[a]}`} />{ACCORD_LABEL[a]}</span>)}</p>
+              <p class="oil-notes muted">{s.top.slice(0, 2).join(', ')} · {s.base.slice(0, 2).join(', ')}</p>
+            </div>
+            <div class="oil-buy">
+              <p class="num oil-price">from {formatAED(s.store!.price)}</p>
+              <a class="btn btn-sm" href={s.store!.url} rel="noopener">Buy online <span class="ext" aria-hidden="true">↗</span><span class="vh">: {s.title}</span></a>
+              <AddButton kind="scent" id={s.slug} label={s.title} meta={s.family} division="aroma" url={s.store!.url} text="Add to brief" />
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <h3 class="h2 s-sub">More oils in the store</h3>
+      <p class="body-copy">Sold online; notes are on each product’s store page.</p>
+      <ul class="more" data-sortable="more">
+        {otherOils.map((o) => (
+          <li data-name={o.name} data-price={o.price}>
+            <span class="more-n">{title(o.name)}</span>
+            <span class="num muted">from {formatAED(o.price)}</span>
+            <a class="act act-buy" href={o.url} rel="noopener">Buy online<span class="vh">: {title(o.name)}</span></a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section tint" id="diffusers" aria-labelledby="dif-h">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="sh-t"><p class="label label-muted kicker">Aroma diffusers</p><h2 class="h1" id="dif-h">Diffusers.</h2></div>
+        <p class="body-copy sh-d">Compact units scent a room from where they stand; HVAC-connected systems work through the air conditioning. For several rooms or a whole building, <a href="/brief?need=aroma">ask for a recommendation</a>.</p>
+      </div>
+      <div class="s-sort" data-sort-group="dif">
+        <span class="label label-muted">Sort</span>
+        <button class="chip" type="button" data-sort="price" aria-pressed="true">Price</button>
+        <button class="chip" type="button" data-sort="name" aria-pressed="false">Model</button>
+      </div>
+      <ul class="dif-grid" data-sortable="dif">
+        {[...diffusers].sort((a, b) => (a.price ?? 1e9) - (b.price ?? 1e9)).map((d) => <DiffuserCard d={d} />)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="sampler" aria-labelledby="box-h">
+    <div class="wrap box">
+      <div>
+        <p class="label label-muted kicker">Scent box</p>
+        <h2 class="h1" id="box-h">21 fragrances, 5 ml each.</h2>
+      </div>
+      <div class="box-body">
+        <p class="body-copy">The easiest way to choose: try the latest fragrances in the space itself. Name any scents you particularly want, and the team will include them.</p>
+        <p class="muted box-note">The scent box’s online checkout link is still being set up on the store, so for now it is ordered by request.</p>
+        <AddButton kind="category" id="scent-box" label="Scent box (21 × 5 ml)" division="aroma" text="Add scent box to brief" class="btn" />
+      </div>
+    </div>
+  </section>
+
+  <section class="s-foot rule">
+    <div class="wrap s-foot-in">
+      <p class="muted">Prices, stock and delivery are set by the Global Aroma online store and may change. Checkout and payment happen on globalaroma.me, operated by {company.legalName}.</p>
+      <a class="btn btn-line" href={company.store.shop} rel="noopener">Open the full store <span class="ext" aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+
+  <ScentDialog />
+  <script type="application/json" id="scent-data" set:html={JSON.stringify(clientScents())} />
+</Base>
+
+<script>
+  import '../scripts/scents-ui';
+  document.querySelectorAll<HTMLElement>('[data-sort-group]').forEach((g) => {
+    const list = document.querySelector<HTMLElement>(`[data-sortable="${g.dataset.sortGroup}"]`)!;
+    const more = g.dataset.sortGroup === 'oils' ? document.querySelector<HTMLElement>('[data-sortable="more"]') : null;
+    g.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((b) => b.addEventListener('click', () => {
+      g.querySelectorAll('[data-sort]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      for (const l of [list, more]) {
+        if (!l) continue;
+        const items = [...l.children] as HTMLElement[];
+        items.sort((x, y) => b.dataset.sort === 'price' ? (+x.dataset.price! - +y.dataset.price!) : x.dataset.name!.localeCompare(y.dataset.name!));
+        items.forEach((i) => l.appendChild(i));
+      }
+    }));
+  });
+</script>
+
+<style>
+  .s-head { padding-block: clamp(2.5rem, 6vw, 5rem) clamp(2rem, 4vw, 3rem); display: grid; gap: clamp(2rem, 4vw, 3rem); }
+  .s-head-in { display: grid; grid-template-columns: 1fr minmax(0, 28rem); gap: 2rem; align-items: end; }
+  .s-head-in > div { display: grid; gap: 1.25rem; }
+  @media (max-width: 860px) { .s-head-in { grid-template-columns: 1fr; } }
+  .how { display: grid; grid-template-columns: repeat(4, 1fr); border-top: var(--line-strong); }
+  .how li { padding: 1.1rem 1.25rem 0 0; display: grid; gap: 0.4rem; align-content: start; font-size: 0.95rem; }
+  .how li + li { padding-left: 1.25rem; border-left: var(--line); }
+  .how .num { font-size: 0.78rem; color: var(--aroma); }
+  .how-q { color: var(--ink-72); }
+  @media (max-width: 860px) { .how { grid-template-columns: 1fr 1fr; row-gap: 1.25rem; } .how li:nth-child(3) { padding-left: 0; border-left: 0; } }
+  @media (max-width: 480px) { .how { grid-template-columns: 1fr; } .how li + li { padding-left: 0; border-left: 0; } }
+
+  .s-tabs { position: sticky; top: var(--nav-h); z-index: 40; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-block: var(--line); }
+  .s-tabs-in { display: flex; gap: 1.75rem; overflow-x: auto; scrollbar-width: none; }
+  .s-tabs a { flex: none; padding: 0.85rem 0; font-size: 0.9rem; font-weight: 500; text-decoration: none; color: var(--ink-72); border-bottom: 2px solid transparent; display: inline-flex; gap: 0.45rem; align-items: baseline; }
+  .s-tabs a .num { font-size: 0.75rem; color: var(--ink-56); }
+  .s-tabs a:hover { color: var(--ink); border-bottom-color: var(--aroma); }
+  .s-tabs-store { margin-left: auto; }
+
+  .s-sort { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; }
+  .oils { border-top: var(--line-strong); display: grid; grid-template-columns: 1fr 1fr; column-gap: clamp(1.5rem, 3vw, 3rem); }
+  .oil { display: grid; grid-template-columns: 5.5rem 1fr auto; gap: 1.1rem; align-items: center; padding: 1rem 0; border-bottom: var(--line); }
+  .oil-sig { display: block; background: var(--paper-2); padding: 0.45rem; aspect-ratio: 1; }
+  .oil-sig img { width: 100%; height: 100%; }
+  .oil-body { display: grid; gap: 0.2rem; min-width: 0; }
+  .oil-name { font-family: var(--f-serif); font-size: 1.3rem; letter-spacing: -0.012em; line-height: 1.15; }
+  .oil-name a { text-decoration: none; }
+  .oil-name a:hover { text-decoration: underline; text-decoration-thickness: 1px; }
+  .oil-fam { display: flex; flex-wrap: wrap; gap: 0.2rem 0.7rem; font-size: 0.75rem; color: var(--ink-56); }
+  .oil-fam span { display: inline-flex; gap: 0.3rem; align-items: center; }
+  .oil-fam .dot { width: 0.45rem; height: 0.45rem; }
+  .oil-notes { font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .oil-buy { display: grid; justify-items: end; gap: 0.4rem; }
+  .oil-price { font-size: 0.9rem; }
+  @media (max-width: 1100px) { .oils { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) {
+    .oil { grid-template-columns: 4.5rem 1fr; }
+    .oil-buy { grid-column: 1 / -1; grid-template-columns: 1fr auto; justify-items: start; align-items: center; }
+    .oil-buy :global(.act) { grid-column: 1 / -1; }
+    .oil-notes { white-space: normal; }
+  }
+  .s-sub { margin-top: clamp(3.5rem, 6vw, 5rem); margin-bottom: 0.5rem; }
+  .more { margin-top: 1.5rem; border-top: var(--line-strong); display: grid; grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr)); column-gap: 2.5rem; }
+  .more li { display: grid; grid-template-columns: 1fr auto auto; gap: 1.25rem; align-items: center; padding: 0.7rem 0; border-bottom: var(--line); }
+  .more-n { font-family: var(--f-serif); font-size: 1.12rem; }
+  @media (max-width: 420px) { .more { grid-template-columns: 1fr; } .more li { grid-template-columns: 1fr auto; } .more li .act { grid-column: 1 / -1; } }
+
+  .dif-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); border-top: var(--line); border-left: var(--line); }
+
+  .box { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 2rem; row-gap: 1.5rem; align-items: end; }
+  .box > div:first-child { grid-column: 1 / span 6; display: grid; gap: 1rem; }
+  .box-body { grid-column: 8 / -1; display: grid; gap: 1rem; justify-items: start; }
+  .box-note { font-size: 0.88rem; }
+  @media (max-width: 860px) { .box > div:first-child, .box-body { grid-column: 1 / -1; } }
+
+  .s-foot { padding-block: 2.5rem 4rem; }
+  .s-foot-in { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+  .s-foot-in p { max-width: 62ch; font-size: 0.88rem; }
+</style>

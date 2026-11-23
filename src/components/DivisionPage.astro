@@ -112,7 +112,8 @@ const hexOf: Record<string, string> = { aroma: '#b4612a', hospitality: '#3e5c50'
   .d-hero-in > .kicker { grid-column: 1 / span 6; grid-row: 1; align-self: end; }
   .d-hero-in h1 { grid-column: 1 / span 6; grid-row: 2; }
   .d-side { grid-column: 1 / span 5; grid-row: 3; display: grid; gap: 1.4rem; align-self: start; }
-  .d-art { grid-column: 8 / -1; grid-row: 1 / span 3; position: relative; aspect-ratio: 760 / 820; border: var(--line); overflow: hidden; align-self: start; }
+  .d-art { grid-column: 7 / -1; grid-row: 1 / span 3; position: relative; aspect-ratio: 760 / 820; border: var(--line); overflow: hidden; align-self: start; background: var(--paper-2); }
+  .d-art :global(svg path:not(.acc):not(.pulse)) { opacity: 0.7; }
   .d-art :global(.pattern) { position: absolute; inset: 0; }
   .d-art-label { position: absolute; left: 1rem; top: 1rem; background: var(--paper); padding: 0.25rem 0.5rem; border-left: 3px solid var(--c); }
   .d-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; }

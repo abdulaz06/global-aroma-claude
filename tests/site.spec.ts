@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-const PAGES = ['/', '/aroma/', '/hospitality/', '/technology/', '/brief/', '/contact/'];
+const PAGES = ['/', '/aroma/', '/hospitality/', '/technology/', '/shop/', '/brief/', '/contact/'];
 // Product photos load from globalaroma.me; their failure in an offline sandbox is not a site error.
 const ignorable = (t: string) => /globalaroma\.me|ERR_TUNNEL|ERR_NAME_NOT_RESOLVED|ERR_INTERNET_DISCONNECTED/.test(t);
 
@@ -154,4 +154,14 @@ test('without JavaScript the content, links and contacts remain', async ({ brows
   await page.goto('/brief/');
   await expect(page.locator('noscript')).toHaveCount(1);
   await ctx.close();
+});
+
+test('shop: every purchase hands off to a WooCommerce product page; sorting works', async ({ page }) => {
+  await page.goto('/shop/');
+  const buys = await page.$$eval('a[href^="https://globalaroma.me/product/"]', (els) => els.map((e) => (e as HTMLAnchorElement).href));
+  expect(new Set(buys).size).toBeGreaterThanOrEqual(47 + 13);
+  await page.locator('[data-sort-group=oils] [data-sort=price]').click();
+  const prices = await page.$$eval('[data-sortable=oils] > li', (els) => els.map((e) => +(e as HTMLElement).dataset.price!));
+  expect(prices).toEqual([...prices].sort((a, b) => a - b));
+  await expect(page.getByText('orders reach', { exact: false })).toHaveCount(0);
 });

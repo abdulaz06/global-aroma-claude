@@ -1,0 +1,42 @@
+---
+import AddButton from './AddButton.astro';
+import { formatAED, type Diffuser } from '../data/diffusers';
+interface Props { d: Diffuser }
+const { d } = Astro.props;
+---
+<li class="dif" data-price={d.price ?? 999999} data-name={d.code}>
+  <div class:list={['dif-media', { noimg: !d.image }]}>
+    <span class="dif-code num" aria-hidden="true">{d.code}</span>
+    <svg class="dif-pict" viewBox="0 0 120 90" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1">
+      {d.kind === 'hvac'
+        ? <><path d="M6 64h108M6 74h108" /><path d="M48 64V40h24v24" /><path d="M60 40V22" /><path d="M54 18c4-4 8-4 12 0M50 12c6-6 14-6 20 0" opacity=".6" /></>
+        : <><rect x="50" y="34" width="20" height="34" rx="3" /><path d="M56 34v-4h8v4" /><path d="M54 24c4-4 8-4 12 0M50 18c6-6 14-6 20 0M46 12c8-8 20-8 28 0" opacity=".6" /><path d="M40 68h40" /></>}
+    </svg>
+    {d.image && <img src={d.image} alt={`${d.code} diffuser`} loading="lazy" decoding="async" width="300" height="300" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add('noimg');this.remove()" />}
+    {d.kind === 'hvac' && <span class="tag dif-tag">HVAC</span>}
+  </div>
+  <div class="dif-body">
+    <h3 class="dif-name">{d.code}</h3>
+    <p class="dif-note muted">{d.note ?? (d.price ? 'Specifications on the store page.' : 'Price on request.')}</p>
+    <p class="dif-price num">{d.price ? formatAED(d.price) : 'Price on request'}</p>
+    <div class="dif-acts">
+      <AddButton kind="diffuser" id={d.code} label={d.code} meta={d.price ? formatAED(d.price) : 'Price on request'} division="aroma" url={d.url} text="Add" />
+      <a class="act act-buy" href={d.url} rel="noopener">{d.price ? 'Buy online' : 'View'}</a>
+    </div>
+  </div>
+</li>
+
+<style>
+  .dif { border-right: var(--line); border-bottom: var(--line); display: grid; grid-template-rows: auto 1fr; }
+  .dif-media { position: relative; aspect-ratio: 4 / 3; background: var(--paper-2); display: grid; place-items: center; overflow: hidden; }
+  .dif-media img { position: relative; width: 62%; height: 82%; object-fit: contain; mix-blend-mode: multiply; }
+  .dif-pict { position: absolute; width: 46%; top: 12%; left: 27%; color: var(--ink-32); opacity: 0; }
+  .noimg .dif-pict { opacity: 1; }
+  .dif-code { position: absolute; inset: auto auto 0.8rem 1rem; font-size: clamp(1.6rem, 2.6vw, 2.2rem); letter-spacing: -0.03em; color: var(--ink-16); }
+  .dif-tag { position: absolute; top: 0.75rem; left: 0.75rem; background: var(--hospitality); color: var(--paper); padding: 0.25rem 0.5rem; font-family: var(--f-mono); font-size: 0.62rem; letter-spacing: 0.08em; }
+  .dif-body { padding: 1.1rem 1.1rem 1rem; display: grid; gap: 0.4rem; align-content: start; }
+  .dif-name { font-family: var(--f-mono); font-weight: 500; font-size: 1rem; letter-spacing: -0.01em; }
+  .dif-note { font-size: 0.85rem; line-height: 1.45; min-height: 2.5em; }
+  .dif-price { font-size: 1rem; }
+  .dif-acts { display: flex; gap: 1.1rem; margin-top: 0.2rem; }
+</style>

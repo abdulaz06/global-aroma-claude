@@ -1,0 +1,95 @@
+---
+/**
+ * Reel stage (unlisted). Each reel in plan.json is drawn as a pure function
+ * of time: window.reelAt(id, seconds) sets every line, label and fade, so the
+ * renderer can step frames deterministically (scripts/render-reel.mjs).
+ */
+import '../../styles/global.css';
+import plan from '../../social/plan.json';
+import { scentBySlug } from '../../lib/library';
+import { signatureRings, signatureOrigin } from '../../lib/signature';
+import { formatAED } from '../../data/diffusers';
+
+const reels = plan.reels.map((r) => {
+  const s = scentBySlug[r.scent];
+  const rings = signatureRings(s, { size: 860 });
+  const origin = signatureOrigin();
+  return { ...r, s, rings, origin };
+});
+const mark = (c: string, n = 72) => `<svg width="${n}" height="${n}" viewBox="0 0 40 40" fill="none"><path d="M20.6 3.4c9.3.2 16.2 7.1 16 16.6-.2 9.4-7.6 16.6-17 16.4C10.4 36.2 3.4 29.3 3.5 20.2 3.7 10.8 11.3 3.2 20.6 3.4Z" stroke="${c}" stroke-width="1.4"/><path d="M19.3 9.6c6.4.1 11 4.9 10.8 11.1-.1 6.1-5 10.7-11.2 10.6-6-.2-10.4-4.8-10.3-10.6.1-6.3 4.8-11.2 10.7-11.1Z" stroke="${c}" stroke-width="1.4"/><path d="M17.9 15.4c3 .1 5.2 2.4 5.1 5.3 0 2.9-2.4 5-5.3 5-2.8-.1-4.9-2.3-4.8-5.1 0-2.9 2.2-5.3 5-5.2Z" stroke="${c}" stroke-width="1.4"/><circle cx="16.6" cy="20.6" r="1.6" fill="${c}"/></svg>`;
+---
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8" /><meta name="robots" content="noindex, nofollow" /><title>Reel stage</title></head>
+<body class="reel-body">
+  {reels.map((r) => (
+    <section class="reel" id={r.id} data-reel data-seconds={r.seconds}>
+      <p class="r-k fx-mono" data-in="0.3,1.2">Global Aroma · Scent signature</p>
+      <svg class="r-sig" viewBox="0 0 860 860" width="860" height="860" fill="none">
+        <g data-spin>
+          {r.rings.map((ring, i) => <path d={ring.d} stroke={ring.color} stroke-width={(ring.width / 1.35 * 2.6).toFixed(2)} pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" data-ring={i} data-layer={ring.layer} />)}
+          <circle cx={r.origin[0]} cy={r.origin[1]} r="6" fill="#1a1714" data-in="0.6,1.4" />
+        </g>
+      </svg>
+      <div class="r-layers">
+        <p data-layer-label="base"><span class="fx-mono">Base</span><span class="fx-serif">{r.s.base.join(', ')}</span></p>
+        <p data-layer-label="heart"><span class="fx-mono">Heart</span><span class="fx-serif">{r.s.heart.join(', ')}</span></p>
+        <p data-layer-label="top"><span class="fx-mono">Top</span><span class="fx-serif">{r.s.top.join(', ')}</span></p>
+      </div>
+      <div class="r-name" data-in="7.2,8.2"><h2 class="fx-serif">{r.s.title}</h2><p class="fx-mono">{r.s.family}{r.s.store ? ` · Diffuser oil from ${formatAED(r.s.store.price)}` : ''}</p></div>
+      <div class="r-end" data-in="10.2,11"><span set:html={mark('#f2eee7')} /><p class="fx-serif">Every scent<br />has a shape.</p><p class="fx-mono">globalaroma.me</p></div>
+    </section>
+  ))}
+  <script is:inline>
+    const ease = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
+    window.reelAt = (id, t) => {
+      const el = document.getElementById(id);
+      // Rings draw inside-out: base 1.4–3.8s, heart 3.6–5.4s, top 5.2–6.8s.
+      const win = { base: [1.4, 3.8], heart: [3.6, 5.4], top: [5.2, 6.8] };
+      const groups = { base: [], heart: [], top: [] };
+      el.querySelectorAll('[data-ring]').forEach((p) => groups[p.dataset.layer].push(p));
+      for (const k of Object.keys(groups)) {
+        const [a, b] = win[k], g = groups[k], step = (b - a) / Math.max(1, g.length);
+        g.forEach((p, i) => p.setAttribute('stroke-dashoffset', String(1 - ease((t - a - i * step * 0.6) / 1.1))));
+      }
+      el.querySelectorAll('[data-layer-label]').forEach((p) => {
+        const k = p.dataset.layerLabel;
+        const [a] = win[k];
+        const next = k === 'base' ? win.heart[0] : k === 'heart' ? win.top[0] : 6.9;
+        const on = ease((t - a) / 0.5) * (1 - ease((t - next) / 0.35));
+        p.style.opacity = on; p.style.transform = `translateY(${(1 - ease((t - a) / 0.6)) * 24}px)`;
+      });
+      el.querySelectorAll('[data-in]').forEach((n) => {
+        const [a, b] = n.dataset.in.split(',').map(Number);
+        n.style.opacity = ease((t - a) / (b - a));
+      });
+      const spin = el.querySelector('[data-spin]');
+      spin.style.transform = `rotate(${-10 * ease((t - 6.8) / 4)}deg) scale(${1 + 0.04 * ease((t - 6.8) / 4)})`;
+      el.querySelector('.r-sig').style.opacity = 1 - ease((t - 10) / 0.8) * 0.85;
+      el.querySelector('.r-end').style.pointerEvents = 'none';
+      el.style.setProperty('--end', ease((t - 10) / 0.9));
+    };
+    document.querySelectorAll('[data-reel]').forEach((r) => window.reelAt(r.id, 0));
+  </script>
+</body></html>
+
+<style is:global>
+  .reel-body { margin: 0; background: #000; }
+  .reel { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--f-sans); --end: 0; }
+  .reel::after { content: ''; position: absolute; inset: 0; background: var(--ink); opacity: var(--end); z-index: 1; }
+  .fx-serif { font-family: var(--f-serif); font-optical-sizing: auto; letter-spacing: -0.025em; }
+  .fx-mono { font-family: var(--f-mono); font-size: 28px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
+  .reel p, .reel h2 { margin: 0; }
+  .r-k { position: absolute; top: 300px; left: 0; right: 0; text-align: center; }
+  .r-sig { position: absolute; left: 110px; top: 400px; }
+  .r-sig g { transform-origin: 430px 430px; }
+  .r-layers { position: absolute; left: 90px; right: 90px; top: 1300px; height: 200px; }
+  .r-layers p { position: absolute; inset: 0 0 auto 0; display: grid; gap: 14px; text-align: center; opacity: 0; }
+  .r-layers .fx-mono { color: var(--ink-56); }
+  .r-layers .fx-serif { font-size: 56px; line-height: 1.12; }
+  .r-name { position: absolute; left: 80px; right: 80px; top: 1290px; text-align: center; opacity: 0; display: grid; gap: 18px; }
+  .r-name h2 { font-size: 140px; line-height: 0.95; font-weight: 400; }
+  .r-name .fx-mono { color: var(--ink-56); font-size: 26px; }
+  .r-end { position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 36px; color: var(--paper); opacity: 0; }
+  .r-end .fx-serif { font-size: 96px; text-align: center; line-height: 1; max-width: 800px; }
+  .r-end .fx-mono { color: var(--p-72); }
+</style>

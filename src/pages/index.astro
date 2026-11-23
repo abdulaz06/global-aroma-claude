@@ -45,7 +45,7 @@ const online = scents.filter((s) => s.store).length;
         <p class="lead">Scent marketing, hospitality supplies and business technology for hotels, malls, offices and homes. Three divisions, one team in Dubai.</p>
         <div class="hero-cta">
           <a class="btn" href="/brief">Start a brief</a>
-          <a class="btn btn-line" href={company.store.shop} rel="noopener">Shop oils &amp; diffusers <span class="ext" aria-hidden="true">↗</span></a>
+          <a class="btn btn-line" href="/shop">Shop oils &amp; diffusers</a>
         </div>
       </div>
     </div>
@@ -146,9 +146,9 @@ const online = scents.filter((s) => s.store).length;
         <div class="path reveal">
           <p class="label label-muted">Order online</p>
           <h3 class="h2">Oils &amp; diffusers</h3>
-          <p class="body-copy">{online} fragrances from the collection, plus more oils, and {diffusers.filter((d) => d.price).length} priced diffusers in the official store. Pay and check out on globalaroma.me.</p>
+          <p class="body-copy">{online} fragrances from the collection, plus more oils, and {diffusers.filter((d) => d.price).length} priced diffusers. Browse them here, then pay and check out on the Global Aroma store.</p>
           <p class="path-how"><span class="act act-buy" aria-hidden="true">Buy online</span> marks anything sold in the store.</p>
-          <a class="btn" href={company.store.shop} rel="noopener">Go to the store <span class="ext" aria-hidden="true">↗</span></a>
+          <a class="btn" href="/shop">Browse the shop</a>
         </div>
         <div class="path reveal">
           <p class="label label-muted">Request a quote</p>

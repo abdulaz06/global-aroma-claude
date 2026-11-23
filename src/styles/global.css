@@ -168,6 +168,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .brief-count { font-family: var(--f-mono); font-size: 0.75rem; min-width: 1.4rem; height: 1.4rem; border-radius: 99px; display: inline-grid; place-items: center; background: var(--paper); color: var(--ink); padding-inline: 0.3rem; }
 .btn:hover .brief-count { background: var(--ink); color: var(--paper); }
 .menu-btn { display: none; }
+@media (max-width: 480px) { .brand-sub { display: none; } }
 @media (max-width: 960px) {
   .nav-links { display: none; }
   .menu-btn { display: inline-flex; }
@@ -235,3 +236,12 @@ select.input { appearance: none; background-image: linear-gradient(45deg, transp
 .near-name:hover { text-decoration: underline; }
 .near-meta { font-size: 0.82rem; color: var(--ink-56); }
 .dark .near-meta { color: var(--p-56); }
+
+/* Division line motion: purposeful, slow, and off under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .pattern .acc { stroke-dasharray: 1; stroke-dashoffset: 1; animation: line-draw 2.6s var(--ease) 0.35s forwards; }
+  .pattern .pulse { animation: line-pulse 5.5s linear infinite; }
+  .js .reveal:not(.in) .pattern .acc { animation-play-state: paused; }
+}
+@keyframes line-draw { to { stroke-dashoffset: 0; } }
+@keyframes line-pulse { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
