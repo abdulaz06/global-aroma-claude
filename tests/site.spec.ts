@@ -111,7 +111,7 @@ test('brief: shortlist, validate, and build email + WhatsApp hand-offs', async (
 });
 
 test('keyboard: skip link and dialog focus return', async ({ page }, info) => {
-  test.skip(info.project.name === 'mobile', 'keyboard flow is desktop');
+  test.skip(info.project.use.isMobile === true, 'keyboard flow is desktop');
   await page.goto('/aroma/');
   await page.keyboard.press('Tab');
   await expect(page.locator('.skip')).toBeFocused();
@@ -124,7 +124,7 @@ test('keyboard: skip link and dialog focus return', async ({ page }, info) => {
 });
 
 test('mobile menu opens and closes', async ({ page }, info) => {
-  test.skip(info.project.name !== 'mobile', 'mobile only');
+  test.skip(info.project.use.isMobile !== true, 'mobile only');
   await page.goto('/');
   await page.click('[data-menu]');
   await expect(page.locator('#mobile-menu')).toBeVisible();

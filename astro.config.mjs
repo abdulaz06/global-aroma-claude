@@ -1,9 +1,8 @@
 // Global Aroma — concept site. Static Astro build; see docs/04-decisions.md.
 import { defineConfig } from 'astro/config';
 
-// Preview URL is set at deploy time (PUBLIC_SITE_URL); the default keeps
-// canonical and Open Graph URLs absolute in local builds.
-const SITE = process.env.PUBLIC_SITE_URL || 'https://global-aroma-claude.vercel.app';
+// Preview builds can override the stable Production origin.
+const SITE = process.env.PUBLIC_SITE_URL || 'https://global-aroma-claude-concept.vercel.app';
 
 export default defineConfig({
   site: SITE,
