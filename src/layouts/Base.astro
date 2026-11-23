@@ -2,6 +2,8 @@
 import '../styles/global.css';
 import Mark from '../components/Mark.astro';
 import { company } from '../data/company';
+import serifFont from '@fontsource-variable/newsreader/files/newsreader-latin-opsz-normal.woff2?url';
+import sansFont from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url';
 
 interface Props {
   title: string;
@@ -37,6 +39,8 @@ const nav = [
   <link rel="canonical" href={canonical} />
   <meta name="theme-color" content="#f2eee7" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preload" href={serifFont} as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href={sansFont} as="font" type="font/woff2" crossorigin />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Global Aroma (concept)" />
   <meta property="og:title" content={fullTitle} />
