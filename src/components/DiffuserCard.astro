@@ -6,7 +6,7 @@ const { d } = Astro.props;
 ---
 <li class="dif" data-price={d.price ?? 999999} data-name={d.code}>
   <div class:list={['dif-media', { noimg: !d.image }]}>
-    <span class="dif-code num" aria-hidden="true">{d.code}</span>
+    <span class="dif-code num" aria-hidden="true" data-code={d.code}></span>
     <svg class="dif-pict" viewBox="0 0 120 90" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1">
       {d.kind === 'hvac'
         ? <><path d="M6 64h108M6 74h108" /><path d="M48 64V40h24v24" /><path d="M60 40V22" /><path d="M54 18c4-4 8-4 12 0M50 12c6-6 14-6 20 0" opacity=".6" /></>
@@ -32,6 +32,7 @@ const { d } = Astro.props;
   .dif-media img { position: relative; width: 62%; height: 82%; object-fit: contain; mix-blend-mode: multiply; }
   .dif-pict { position: absolute; width: 46%; top: 12%; left: 27%; color: var(--ink-32); opacity: 0; }
   .noimg .dif-pict { opacity: 1; }
+  .dif-code::before { content: attr(data-code); }
   .dif-code { position: absolute; inset: auto auto 0.8rem 1rem; font-size: clamp(1.6rem, 2.6vw, 2.2rem); letter-spacing: -0.03em; color: var(--ink-16); }
   .dif-tag { position: absolute; top: 0.75rem; left: 0.75rem; background: var(--hospitality); color: var(--paper); padding: 0.25rem 0.5rem; font-family: var(--f-mono); font-size: 0.62rem; letter-spacing: 0.08em; }
   .dif-body { padding: 1.1rem 1.1rem 1rem; display: grid; gap: 0.4rem; align-content: start; }

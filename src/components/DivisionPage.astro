@@ -25,7 +25,7 @@ const hexOf: Record<string, string> = { aroma: '#b4612a', hospitality: '#3e5c50'
   <section class="d-hero" style={`--c:${hex}`}>
     <div class="wrap d-hero-in">
       <div class="d-art reveal" aria-hidden="true"><Pattern behaviour={d.behaviour} w={760} h={820} seed={d.id + '-hero'} accent={hex} lines={d.behaviour === 'weave' ? 16 : 26} width={1.1} /><span class="d-art-label label">{d.behaviour === 'weave' ? 'Weave' : 'Signal'}</span></div>
-      <p class="label kicker reveal" style={`color:${hex}`}>0{n} · {d.name} · {d.kicker}</p>
+      <p class="label kicker reveal" style={`color:var(--${d.id}-text)`}>0{n} · {d.name} · {d.kicker}</p>
       <h1 class="hero-t reveal">{d.statement}</h1>
       <div class="d-side reveal">
         <p class="lead">{d.intro}</p>

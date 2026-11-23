@@ -25,7 +25,7 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
   <section class="a-hero">
     <div class="wrap a-hero-in">
       <div class="a-hero-copy">
-        <p class="label kicker reveal" style="color:var(--aroma)">01 · Global Aroma · Scent marketing</p>
+        <p class="label kicker reveal" style="color:var(--aroma-text)">01 · Global Aroma · Scent marketing</p>
         <h1 class="hero-t reveal">A space people remember.</h1>
         <p class="lead reveal">Fragrance oils, commercial and home diffusers, and signature scents designed around a brand. Explore the collection by feel, order online, or ask for a proposal.</p>
         <div class="a-cta reveal">
@@ -197,7 +197,7 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
   .legend-steps { display: grid; grid-template-columns: repeat(3, 1fr); border-top: var(--line-strong); }
   .legend-steps li { padding: 1.5rem 1.75rem 0 0; display: grid; gap: 0.7rem; align-content: start; }
   .legend-steps li + li { padding-left: 1.75rem; border-left: var(--line); }
-  .legend-steps .num { color: var(--aroma); font-size: 0.85rem; }
+  .legend-steps .num { color: var(--aroma-text); font-size: 0.85rem; }
   .legend-acc { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; font-size: 0.8rem; color: var(--ink-72); }
   .legend-acc span { display: inline-flex; align-items: center; gap: 0.35rem; }
   @media (max-width: 860px) { .legend-steps { grid-template-columns: 1fr; } .legend-steps li + li { padding-left: 0; border-left: 0; border-top: var(--line); padding-top: 1.5rem; margin-top: 1.5rem; } }

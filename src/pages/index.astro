@@ -73,7 +73,7 @@ const online = scents.filter((s) => s.store).length;
       </div>
       <div class="divs">
         {divisions.map((d, i) => (
-          <article class="div-card reveal" style={`--c:${accent[d.id]}`}>
+          <article class="div-card reveal" style={`--c:${accent[d.id]};--ct:var(--${d.id}-text)`}>
             <a href={d.href} class="div-art" aria-hidden="true" tabindex="-1">
               <Pattern behaviour={d.behaviour} w={640} h={420} seed={d.id + 'home'} accent={hex[d.id]} lines={d.behaviour === 'weave' ? 12 : 18} />
               <span class="div-behaviour label">{d.behaviour === 'flow' ? 'Flow' : d.behaviour === 'weave' ? 'Weave' : 'Signal'}</span>
@@ -240,10 +240,10 @@ const online = scents.filter((s) => s.store).length;
   .div-body { grid-column: 8 / -1; display: grid; gap: 1rem; justify-items: start; }
   .div-body h3 a { text-decoration: none; }
   .div-body h3 a:hover { text-decoration: underline; text-decoration-thickness: 1px; }
-  .div-stmt { font-size: 1.35rem; color: var(--c); line-height: 1.25; }
+  .div-stmt { font-size: 1.35rem; color: var(--ct, var(--c)); line-height: 1.25; }
   .div-cats { width: 100%; border-top: var(--line); margin-block: 0.25rem 0.5rem; }
   .div-cats li { display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0; border-bottom: var(--line); font-size: 0.95rem; }
-  .tag-online { color: var(--aroma); }
+  .tag-online { color: var(--aroma-text); }
   @media (max-width: 860px) {
     .div-art, .div-card:nth-child(even) .div-art, .div-body, .div-card:nth-child(even) .div-body { grid-column: 1 / -1; grid-row: auto; }
   }

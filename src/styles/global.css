@@ -15,16 +15,20 @@
   --ink: #1a1714;
   --ink-90: rgba(26, 23, 20, 0.9);
   --ink-72: rgba(26, 23, 20, 0.72);
-  --ink-56: rgba(26, 23, 20, 0.6);
+  --ink-56: rgba(26, 23, 20, 0.7);
   --ink-32: rgba(26, 23, 20, 0.32);
   --ink-16: rgba(26, 23, 20, 0.16);
   --ink-08: rgba(26, 23, 20, 0.08);
   --p-72: rgba(242, 238, 231, 0.74);
-  --p-56: rgba(242, 238, 231, 0.6);
+  --p-56: rgba(242, 238, 231, 0.68);
   --p-24: rgba(242, 238, 231, 0.24);
   --p-12: rgba(242, 238, 231, 0.13);
 
   --aroma: #b4612a;
+  /* Text-safe tones of the accents (≥ 4.5:1 on paper) */
+  --aroma-text: #96491c;
+  --hospitality-text: #3e5c50;
+  --technology-text: #2c42a0;
   --hospitality: #3e5c50;
   --technology: #3149b0;
   --accent: var(--ink);
