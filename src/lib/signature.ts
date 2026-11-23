@@ -151,6 +151,6 @@ export function signatureSVG(s: SignatureInput, opts: SignatureOptions = {}): st
   const src = opts.source === false ? '' : `<circle cx="${ox.toFixed(1)}" cy="${oy.toFixed(1)}" r="${(2.8 * size) / 400}" fill="${opts.ink ?? '#1A1714'}"/>`;
   // Non-scaling strokes keep the 1px line language at every size, from a 56px thumbnail to a poster.
   const k = opts.hairline ?? 1.15;
-  const paths = rings.map((r) => `<path d="${r.d}" stroke="${r.color}" stroke-width="${((r.width / ((opts.stroke ?? 1.35) * size / 400)) * k).toFixed(2)}" vector-effect="non-scaling-stroke"/>`).join('');
+  const paths = rings.map((r) => `<path d="${r.d}" stroke="${r.color}" stroke-width="${((r.width / ((opts.stroke ?? 1.35) * size / 400)) * k).toFixed(2)}" vector-effect="non-scaling-stroke" pathLength="1"/>`).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${bg}<g fill="none" stroke-linejoin="round">${paths}</g>${src}</svg>`;
 }

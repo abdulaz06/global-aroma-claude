@@ -7,7 +7,7 @@ import { company, industries } from '../data/company';
     <div class="wrap">
       <p class="label kicker">Enquiry</p>
       <h1 class="hero-t">Your brief.</h1>
-      <p class="lead">Describe the space, review your shortlist and send it to the Dubai team. It takes about two minutes.</p>
+      <p class="lead">Describe the space and your shortlist, and we’ll prepare a quote request for the Dubai team. It takes about two minutes. To buy products straight away, use the <a href="/shop">shop</a>.</p>
     </div>
   </section>
 
@@ -93,11 +93,11 @@ import { company, industries } from '../data/company';
         <h2 class="label" id="out-h">Brief preview</h2>
         <pre class="b-pre" data-preview tabindex="0" aria-label="Brief text preview"></pre>
         <div class="b-send">
-          <a class="btn" href={`mailto:${company.email.general}`} data-send="email">Send by email</a>
-          <a class="btn btn-line" href={`https://wa.me/${company.whatsapp.number}`} target="_blank" rel="noopener" data-send="whatsapp">Send on WhatsApp</a>
+          <a class="btn" href={`mailto:${company.email.general}`} data-send="email">Open in email</a>
+          <a class="btn btn-line" href={`https://wa.me/${company.whatsapp.number}`} target="_blank" rel="noopener" data-send="whatsapp">Open in WhatsApp</a>
           <button class="act" type="button" data-copy>Copy text</button>
         </div>
-        <p class="b-note muted">Sending opens your own email app or WhatsApp with this brief filled in, addressed to {company.email.general} or {company.whatsapp.display}. This website does not store or send anything itself.</p>
+        <p class="b-note muted">This opens a draft in your own email app or WhatsApp, addressed to {company.email.general} or {company.whatsapp.display}. Nothing is sent until you press send there. This website does not store or send anything itself, and a brief is a request for a quote, not an order.</p>
         <button class="act b-clear" type="button" data-clear>Clear shortlist</button>
       </div>
     </aside>
