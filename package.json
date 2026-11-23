@@ -29,5 +29,9 @@
     "tsx": "^4.23.15",
     "typescript": "^6.0.3"
   },
-  "type": "module"
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true
 }

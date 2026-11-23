@@ -35,7 +35,7 @@ const mark = (c: string, n = 72) => `<svg width="${n}" height="${n}" viewBox="0 
         <p data-layer-label="heart"><span class="fx-mono">Heart</span><span class="fx-serif">{r.s.heart.join(', ')}</span></p>
         <p data-layer-label="top"><span class="fx-mono">Top</span><span class="fx-serif">{r.s.top.join(', ')}</span></p>
       </div>
-      <div class="r-name" data-in="7.2,8.2"><h2 class="fx-serif">{r.s.title}</h2><p class="fx-mono">{r.s.family}{r.s.store ? ` · Diffuser oil from ${formatAED(r.s.store.price)}` : ''}</p></div>
+      <div class="r-name" data-in="7.2,8.2"><h2 class="fx-serif">{r.s.title}</h2><p class="fx-mono">{r.s.family}{r.s.store ? ` · Diffuser oil ${formatAED(r.s.store.price)} online` : ''}</p></div>
       <div class="r-end" data-in="10.2,11"><span set:html={mark('#f2eee7')} /><p class="fx-serif">Every scent<br />has a shape.</p><p class="fx-mono">globalaroma.me</p></div>
     </section>
   ))}

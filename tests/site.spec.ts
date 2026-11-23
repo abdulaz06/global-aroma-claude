@@ -110,7 +110,7 @@ test('brief: shortlist, validate, and build email + WhatsApp hand-offs', async (
   await expect(page.locator('.b-item')).toHaveCount(2);
 });
 
-test('keyboard: skip link and dialog focus return', async ({ page, browserName }, info) => {
+test('keyboard: skip link and dialog focus return', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'keyboard flow is desktop');
   await page.goto('/aroma/');
   await page.keyboard.press('Tab');

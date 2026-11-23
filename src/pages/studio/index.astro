@@ -100,7 +100,7 @@ const fieldSm = fieldSVG(1200, 630, 22);
                   <div><dt class="fx-mono">Heart</dt><dd>{s.heart.join(', ')}</dd></div>
                   <div><dt class="fx-mono">Base</dt><dd>{s.base.join(', ')}</dd></div>
                 </dl>
-                <p class="fx-mono sp-foot"><span>{s.store ? `Diffuser oil · from ${formatAED(s.store.price)}` : 'Ask for formats and volumes'}</span><span>globalaroma.me</span></p>
+                <p class="fx-mono sp-foot"><span>{s.store ? `Diffuser oil · ${formatAED(s.store.price)} online` : 'Ask for formats and volumes'}</span><span>globalaroma.me</span></p>
               </>)}
 
               {f.type === 'divisions-post' && (<>
@@ -125,8 +125,8 @@ const fieldSm = fieldSVG(1200, 630, 22);
               </>)}
 
               {f.type === 'reel-cover-division' && (() => { const dv = divisionById[f.division as 'hospitality']; return (<>
-                <div class="rd-art" set:html={pattern(dv.behaviour, { w: 1080, h: 1920, seed: f.division + '-reel', accent: HEX[f.division], lines: dv.behaviour === 'weave' ? 22 : 30, width: 1.8 })} />
-                <div class="rd-card" style={`--c:${HEX[f.division]}`}>
+                <div class="rd-art" set:html={pattern(dv.behaviour, { w: 1080, h: 1920, seed: f.division + '-reel', accent: HEX[f.division as string], lines: dv.behaviour === 'weave' ? 22 : 30, width: 1.8 })} />
+                <div class="rd-card" style={`--c:${HEX[f.division as string]}`}>
                   <p class="fx-mono">{dv.name}</p>
                   <h2 class="fx-serif">{f.title}</h2>
                 </div>

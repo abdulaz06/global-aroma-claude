@@ -95,7 +95,7 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
         <summary><span class="h3">More oils in the online store</span><span class="label label-muted">{storeOnlyOils.length} oils · notes on the store</span></summary>
         <ul class="oil-list">
           {storeOnlyOils.map((o) => (
-            <li><span>{o.name.toLowerCase().replace(/(^|\s)\S/g, (m) => m.toUpperCase())}</span><span class="num muted">from {formatAED(o.price)}</span>
+            <li><span>{o.name.toLowerCase().replace(/(^|\s)\S/g, (m) => m.toUpperCase())}</span><span class="num muted">{formatAED(o.price)}</span>
               <span class="oil-acts"><AddButton kind="oil" id={o.name} label={o.name} division="aroma" url={o.url} text="Add" /><a class="act act-buy" href={o.url} rel="noopener">Buy</a></span></li>
           ))}
         </ul>

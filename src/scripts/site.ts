@@ -16,7 +16,7 @@ function setMenu(open: boolean) {
   menuBtn.textContent = open ? 'Close' : 'Menu';
   document.body.style.overflow = open ? 'hidden' : '';
 }
-menuBtn?.addEventListener('click', () => setMenu(menu?.hidden ?? true));
+menuBtn?.addEventListener('click', () => setMenu(Boolean(menu?.hidden ?? true)));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu && !menu.hidden) { setMenu(false); menuBtn?.focus(); } });
 window.matchMedia('(min-width: 961px)').addEventListener('change', (e) => e.matches && setMenu(false));
 

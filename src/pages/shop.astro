@@ -52,7 +52,7 @@ const oilCount = collectionOils.length + otherOils.length;
     <div class="wrap">
       <div class="section-head">
         <div class="sh-t"><p class="label label-muted kicker">Diffuser oils</p><h2 class="h1" id="oils-h">From the collection.</h2></div>
-        <p class="body-copy sh-d">{collectionOils.length} oils from the scent collection, each with its notes and signature. Volumes from 100 ml to 500 ml are chosen on the store; prices shown are the store’s starting prices.</p>
+        <p class="body-copy sh-d">{collectionOils.length} oils from the scent collection, each with its notes and signature. Volume (100–500 ml where offered) is chosen on the store. Prices are those the store lists today.</p>
       </div>
       <div class="s-sort" data-sort-group="oils">
         <span class="label label-muted">Sort</span>
@@ -69,7 +69,7 @@ const oilCount = collectionOils.length + otherOils.length;
               <p class="oil-notes muted">{s.top.slice(0, 2).join(', ')} · {s.base.slice(0, 2).join(', ')}</p>
             </div>
             <div class="oil-buy">
-              <p class="num oil-price">from {formatAED(s.store!.price)}</p>
+              <p class="num oil-price">{formatAED(s.store!.price)}</p>
               <a class="btn btn-sm" href={s.store!.url} rel="noopener">Buy online <span class="ext" aria-hidden="true">↗</span><span class="vh">: {s.title}</span></a>
               <AddButton kind="scent" id={s.slug} label={s.title} meta={s.family} division="aroma" url={s.store!.url} text="Add to brief" />
             </div>
@@ -83,7 +83,7 @@ const oilCount = collectionOils.length + otherOils.length;
         {otherOils.map((o) => (
           <li data-name={o.name} data-price={o.price}>
             <span class="more-n">{title(o.name)}</span>
-            <span class="num muted">from {formatAED(o.price)}</span>
+            <span class="num muted">{formatAED(o.price)}</span>
             <a class="act act-buy" href={o.url} rel="noopener">Buy online<span class="vh">: {title(o.name)}</span></a>
           </li>
         ))}

@@ -41,7 +41,7 @@ export function openScent(slug: string, from?: HTMLElement | null) {
   buy.hidden = !s.store;
   if (s.store) buy.href = s.store.url;
   q('[data-store-note]').textContent = s.store
-    ? `Sold online as diffuser oil. Store price from AED ${s.store.price.toLocaleString('en-US', { minimumFractionDigits: s.store.price % 1 ? 2 : 0 })}. Checkout on globalaroma.me.`
+    ? `Sold online as diffuser oil. Listed store price: AED ${s.store.price.toLocaleString('en-US', { minimumFractionDigits: s.store.price % 1 ? 2 : 0 })}; volume is chosen on the store. Checkout on globalaroma.me.`
     : 'Not listed in the online store. Add it to your brief and the team will quote volumes and formats.';
   q<HTMLAnchorElement>('[data-wa]').href = `https://wa.me/${WA}?text=${encodeURIComponent(`Hello Global Aroma, I would like to enquire about ${s.title}.`)}`;
   syncDialogAdd();
