@@ -1,0 +1,3 @@
+# Unofficial concept, pending owner approval. Not for indexing.
+User-agent: *
+Disallow: /

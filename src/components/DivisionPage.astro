@@ -1,0 +1,155 @@
+---
+import Base from '../layouts/Base.astro';
+import Pattern from './Pattern.astro';
+import AddButton from './AddButton.astro';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { divisions, type Division } from '../data/divisions';
+import { company, waLink } from '../data/company';
+
+interface Props {
+  d: Division;
+  hex: string;
+  description: string;
+  image: ImageMetadata;
+  imageAlt: string;
+  spaces: { name: string; line: string }[];
+  approach: { h: string; p: string }[];
+}
+const { d, hex, description, image, imageAlt, spaces, approach } = Astro.props;
+const n = divisions.findIndex((x) => x.id === d.id) + 1;
+const others = divisions.filter((x) => x.id !== d.id);
+const hexOf: Record<string, string> = { aroma: '#b4612a', hospitality: '#3e5c50', technology: '#3149b0' };
+---
+<Base title={`${d.name} — ${d.kicker}`} description={description} current={d.id} accent={hex} og={d.id}>
+  <section class="d-hero" style={`--c:${hex}`}>
+    <div class="wrap d-hero-in">
+      <div class="d-art reveal" aria-hidden="true"><Pattern behaviour={d.behaviour} w={760} h={820} seed={d.id + '-hero'} accent={hex} lines={d.behaviour === 'weave' ? 16 : 26} width={1.1} /><span class="d-art-label label">{d.behaviour === 'weave' ? 'Weave' : 'Signal'}</span></div>
+      <p class="label kicker reveal" style={`color:${hex}`}>0{n} · {d.name} · {d.kicker}</p>
+      <h1 class="hero-t reveal">{d.statement}</h1>
+      <div class="d-side reveal">
+        <p class="lead">{d.intro}</p>
+        <div class="d-cta">
+          <a class="btn" href={`/brief?need=${d.id}`}>Start a {d.short.toLowerCase()} brief</a>
+          <a class="btn btn-line" href={waLink(`Hello Global ${d.short}, I would like to discuss a project.`)} rel="noopener">WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section rule" aria-labelledby="cat-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="h1 sh-t reveal" id="cat-h">What we supply.</h2>
+        <p class="body-copy sh-d reveal">Add the categories you need to your brief. The team confirms ranges, specifications and quantities for each project.</p>
+      </div>
+      <ol class="cats" style={`--c:${hex}`}>
+        {d.categories.map((c, i) => (
+          <li class="cat reveal">
+            <span class="num cat-n">{String(i + 1).padStart(2, '0')}</span>
+            <h3 class="cat-name serif">{c.name}</h3>
+            <p class="cat-line muted">{c.line}</p>
+            <AddButton kind="category" id={`${d.id}-${c.id}`} label={c.name} division={d.id} />
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section tint" aria-labelledby="fit-h">
+    <div class="wrap d-split">
+      <div class="figure d-img reveal"><Image src={image} alt={imageAlt} widths={[640, 1000, 1400]} sizes="(max-width: 860px) 100vw, 50vw" /><span class="tag">Concept image</span></div>
+      <div class="d-fit">
+        <p class="label label-muted kicker">Where it fits</p>
+        <h2 class="h1" id="fit-h">For the spaces that depend on it.</h2>
+        <ul class="fit">
+          {spaces.map((s) => <li><span class="serif fit-n">{s.name}</span><span class="muted">{s.line}</span></li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="ap-h">
+    <div class="wrap">
+      <div class="section-head"><h2 class="h1 sh-t reveal" id="ap-h">How we work with you.</h2></div>
+      <ol class="ap" style={`--c:${hex}`}>
+        {approach.map((a, i) => <li class="reveal"><span class="num">{String(i + 1).padStart(2, '0')}</span><h3 class="h3">{a.h}</h3><p class="muted">{a.p}</p></li>)}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section rule" aria-labelledby="also-h">
+    <div class="wrap">
+      <h2 class="label label-muted" id="also-h">Also from Global DWC</h2>
+      <ul class="also">
+        {others.map((o) => (
+          <li style={`--c:${hexOf[o.id]}`}>
+            <a href={o.href}>
+              <span class="also-art" aria-hidden="true"><Pattern behaviour={o.behaviour} w={600} h={200} seed={o.id + '-also'} accent={hexOf[o.id]} lines={o.behaviour === 'weave' ? 6 : 10} /></span>
+              <span class="label label-muted">{o.kicker}</span>
+              <span class="h2">{o.name} <span aria-hidden="true">→</span></span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="cta-band dark">
+    <div class="wrap cta-band-in">
+      <h2 class="h1">Tell us about your project.</h2>
+      <div class="d-cta">
+        <a class="btn" href={`/brief?need=${d.id}`}>Start a brief</a>
+        <a class="btn btn-line" href={company.phone.href}>Call {company.phone.display}</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .d-hero { padding-block: clamp(2.5rem, 6vw, 5rem) clamp(3.5rem, 7vw, 6rem); }
+  .d-hero-in { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 2rem; row-gap: 1.5rem; align-content: start; }
+  .d-hero-in > .kicker { grid-column: 1 / span 6; grid-row: 1; align-self: end; }
+  .d-hero-in h1 { grid-column: 1 / span 6; grid-row: 2; }
+  .d-side { grid-column: 1 / span 5; grid-row: 3; display: grid; gap: 1.4rem; align-self: start; }
+  .d-art { grid-column: 8 / -1; grid-row: 1 / span 3; position: relative; aspect-ratio: 760 / 820; border: var(--line); overflow: hidden; align-self: start; }
+  .d-art :global(.pattern) { position: absolute; inset: 0; }
+  .d-art-label { position: absolute; left: 1rem; top: 1rem; background: var(--paper); padding: 0.25rem 0.5rem; border-left: 3px solid var(--c); }
+  .d-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  @media (max-width: 860px) {
+    .d-hero-in > .kicker, .d-hero-in h1, .d-side { grid-column: 1 / -1; grid-row: auto; }
+    .d-art { grid-column: 1 / -1; grid-row: auto; aspect-ratio: 16 / 9; order: 5; }
+  }
+
+  .cats { border-top: var(--line-strong); }
+  .cat { display: grid; grid-template-columns: 4rem minmax(0, 5fr) minmax(0, 5fr) auto; gap: 1rem 2rem; align-items: baseline; padding: 1.5rem 0; border-bottom: var(--line); position: relative; }
+  .cat::before { content: ''; position: absolute; left: 0; top: -1px; height: 2px; width: 0; background: var(--c); transition: width 0.6s var(--ease); }
+  .cat:hover::before { width: 100%; }
+  .cat-n { color: var(--c); font-size: 0.85rem; }
+  .cat-name { font-size: clamp(1.5rem, 2.4vw, 2.2rem); letter-spacing: -0.02em; line-height: 1.1; }
+  @media (max-width: 760px) { .cat { grid-template-columns: 2.5rem 1fr; } .cat-line, .cat :global(.act) { grid-column: 2; } }
+
+  .d-split { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 2rem; row-gap: 2rem; align-items: center; }
+  .d-img { grid-column: 1 / span 6; aspect-ratio: 4 / 5; }
+  .d-fit { grid-column: 8 / -1; display: grid; gap: 1.5rem; }
+  .fit { border-top: var(--line); }
+  .fit li { display: grid; gap: 0.2rem; padding: 0.9rem 0; border-bottom: var(--line); }
+  .fit-n { font-size: 1.3rem; letter-spacing: -0.01em; }
+  @media (max-width: 860px) { .d-img, .d-fit { grid-column: 1 / -1; } .d-img { aspect-ratio: 4 / 3; } }
+
+  .ap { display: grid; grid-template-columns: repeat(3, 1fr); border-top: var(--line-strong); }
+  .ap li { padding: 1.5rem 1.75rem 0 0; display: grid; gap: 0.7rem; align-content: start; }
+  .ap li + li { padding-left: 1.75rem; border-left: var(--line); }
+  .ap .num { color: var(--c); font-size: 0.85rem; }
+  @media (max-width: 860px) { .ap { grid-template-columns: 1fr; } .ap li + li { padding-left: 0; border-left: 0; border-top: var(--line); padding-top: 1.5rem; margin-top: 1.5rem; } }
+
+  .also { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem; }
+  .also a { display: grid; gap: 0.6rem; text-decoration: none; }
+  .also-art { display: block; aspect-ratio: 3 / 1; border: var(--line); overflow: hidden; }
+  .also-art :global(.pattern) { height: 100%; transition: transform 1.2s var(--ease); }
+  .also a:hover .also-art :global(.pattern) { transform: scale(1.06); }
+  @media (max-width: 760px) { .also { grid-template-columns: 1fr; } }
+
+  .cta-band { padding-block: clamp(4rem, 8vw, 7rem); }
+  .cta-band-in { display: flex; justify-content: space-between; align-items: end; gap: 2rem; flex-wrap: wrap; }
+</style>

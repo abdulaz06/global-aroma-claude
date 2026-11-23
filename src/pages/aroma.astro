@@ -1,0 +1,278 @@
+---
+import Base from '../layouts/Base.astro';
+import ScentMap from '../components/ScentMap.astro';
+import ScentCard from '../components/ScentCard.astro';
+import ScentDialog from '../components/ScentDialog.astro';
+import AddButton from '../components/AddButton.astro';
+import Pattern from '../components/Pattern.astro';
+import { Image } from 'astro:assets';
+import { scents, scentBySlug, clientScents } from '../lib/library';
+import { signatureSVG } from '../lib/signature';
+import { ACCORDS, ACCORD_LABEL, PIGMENT } from '../lib/accords';
+import { storeOnlyOils } from '../data/scents';
+import { diffusers, formatAED } from '../data/diffusers';
+import { company } from '../data/company';
+import reed from '../assets/concept/reed-diffuser.webp';
+import oil from '../assets/concept/fragrance-oil.webp';
+
+const featured = scentBySlug['arabic-coffee'];
+const featuredSvg = signatureSVG(featured, { size: 560 });
+const usedAccords = ACCORDS.filter((a) => scents.some((s) => s.dominant.includes(a)));
+const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
+---
+<Base title="Global Aroma — Scent collection, oils and diffusers" description="67 fragrances with full notes, mapped by character. Diffuser oils and aroma diffusers to order online, home fragrance, a 21-scent sampler and signature scents for brands." current="aroma" accent="var(--aroma)" og="aroma">
+  <section class="a-hero">
+    <div class="wrap a-hero-in">
+      <div class="a-hero-copy">
+        <p class="label kicker reveal" style="color:var(--aroma)">01 · Global Aroma · Scent marketing</p>
+        <h1 class="hero-t reveal">A space people remember.</h1>
+        <p class="lead reveal">Fragrance oils, commercial and home diffusers, and signature scents designed around a brand. Explore the collection by feel, order online, or ask for a proposal.</p>
+        <div class="a-cta reveal">
+          <a class="btn" href="#library">Explore the collection</a>
+          <a class="btn btn-line" href={company.store.oils} rel="noopener">Shop oils <span class="ext" aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+      <figure class="a-sig reveal">
+        <a href={`#scent-${featured.slug}`} data-open-scent={featured.slug} aria-label={`${featured.title}: open details`} set:html={featuredSvg} />
+        <figcaption>
+          <span class="label label-muted">Signature</span>
+          <span class="serif a-sig-name">{featured.title}</span>
+          <span class="muted a-sig-notes">{featured.top.join(', ')} · {featured.heart.join(', ')} · {featured.base.join(', ')}</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <nav class="subnav" aria-label="On this page">
+    <div class="wrap subnav-in">
+      <a href="#library">Collection</a><a href="#diffusers">Diffusers</a><a href="#home-fragrance">Home fragrance</a><a href="#sampler">Scent box</a><a href="#signature">Signature scent</a>
+    </div>
+  </nav>
+
+  <section class="section" aria-labelledby="read-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="h1 sh-t reveal" id="read-h">Every fragrance, drawn from its notes.</h2>
+        <p class="body-copy sh-d reveal">Scent is invisible, so we draw it. Each fragrance in the collection has a signature generated from its published notes. No two are the same, and the same scent always draws the same figure.</p>
+      </div>
+      <ol class="legend-steps">
+        <li class="reveal"><span class="num">A</span><h3 class="h3">Inside out</h3><p class="muted">Base notes sit at the centre, heart notes around them, top notes on the outside: the order in which you notice them, reversed.</p></li>
+        <li class="reveal"><span class="num">B</span><h3 class="h3">One line per note</h3><p class="muted">Each line is one ingredient, coloured by its accord.</p><p class="legend-acc">{usedAccords.map((a) => <span><i class="dot" style={`background:${PIGMENT[a]}`} />{ACCORD_LABEL[a]}</span>)}</p></li>
+        <li class="reveal"><span class="num">C</span><h3 class="h3">Sillage</h3><p class="muted">The rings drift in one direction, the way a scent trails through a room. Fresh scents drift further, spicy ones ripple, deep ones swell.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section tint" id="library" aria-labelledby="lib-h">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="sh-t">
+          <p class="label label-muted kicker">The collection</p>
+          <h2 class="h1" id="lib-h">{scents.length} fragrances.</h2>
+        </div>
+        <p class="body-copy sh-d">Placed by character: fresh to warm, floral to woody. Tap a dot for its notes, or tap empty space to see the nearest fragrances to that feeling.</p>
+      </div>
+      <ScentMap id="map" />
+
+      <div class="lib" data-library>
+        <div class="lib-tools">
+          <label class="lib-search"><span class="vh">Search fragrances or notes</span><input class="input" type="search" placeholder="Search a name or a note: oud, jasmine, fig…" data-search /></label>
+          <div class="lib-filters" role="group" aria-label="Filter by accord">
+            {usedAccords.map((a) => <button class="chip" type="button" data-filter={a} aria-pressed="false"><span class="dot" style={`background:${PIGMENT[a]}`} />{ACCORD_LABEL[a]}</button>)}
+          </div>
+          <label class="lib-online"><input type="checkbox" data-online /> Sold online only</label>
+          <p class="label label-muted lib-count" data-count aria-live="polite">{scents.length} of {scents.length}</p>
+        </div>
+        <ul class="lib-grid">
+          {sorted.map((s) => <ScentCard s={s} />)}
+        </ul>
+        <p class="lib-empty muted" data-empty hidden>No fragrance matches. Try another note, or clear the filters.</p>
+        <p class="lib-more" data-more-wrap hidden><button class="btn btn-line" type="button" data-more>Show all {scents.length} fragrances</button></p>
+      </div>
+
+      <details class="more-oils">
+        <summary><span class="h3">More oils in the online store</span><span class="label label-muted">{storeOnlyOils.length} oils · notes on the store</span></summary>
+        <ul class="oil-list">
+          {storeOnlyOils.map((o) => (
+            <li><span>{o.name.toLowerCase().replace(/(^|\s)\S/g, (m) => m.toUpperCase())}</span><span class="num muted">from {formatAED(o.price)}</span>
+              <span class="oil-acts"><AddButton kind="oil" id={o.name} label={o.name} division="aroma" url={o.url} text="Add" /><a class="act act-buy" href={o.url} rel="noopener">Buy</a></span></li>
+          ))}
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <section class="section" id="diffusers" aria-labelledby="dif-h">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="sh-t"><p class="label label-muted kicker">Aroma diffusers</p><h2 class="h1" id="dif-h">From a single room to a whole building.</h2></div>
+        <div class="sh-d">
+          <p class="body-copy">Compact units scent a room from where they stand. HVAC-connected systems release fragrance into the air-handling system, so it reaches large or many spaces evenly and stays out of sight.</p>
+          <p class="muted" style="margin-top:1rem;font-size:0.9rem">Not sure which fits? Add the space to your brief and the team will recommend models and quantities.</p>
+        </div>
+      </div>
+      <ul class="dif-grid">
+        {diffusers.map((d) => (
+          <li class="dif">
+            <div class:list={['dif-media', { noimg: !d.image }]}>
+              <span class="dif-code num" aria-hidden="true">{d.code}</span>
+              <svg class="dif-pict" viewBox="0 0 120 90" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1">
+                {d.kind === 'hvac'
+                  ? <><path d="M6 64h108M6 74h108" /><path d="M48 64V40h24v24" /><path d="M60 40V22" /><path d="M54 18c4-4 8-4 12 0M50 12c6-6 14-6 20 0" opacity=".6" /></>
+                  : <><rect x="50" y="34" width="20" height="34" rx="3" /><path d="M56 34v-4h8v4" /><path d="M54 24c4-4 8-4 12 0M50 18c6-6 14-6 20 0M46 12c8-8 20-8 28 0" opacity=".6" /><path d="M40 68h40" /></>}
+              </svg>
+              {d.image && <img src={d.image} alt={`${d.code} diffuser`} loading="lazy" decoding="async" width="300" height="300" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add('noimg');this.remove()" />}
+              {d.kind === 'hvac' && <span class="tag dif-tag">HVAC</span>}
+            </div>
+            <div class="dif-body">
+              <h3 class="dif-name">{d.code}</h3>
+              <p class="dif-note muted">{d.note ?? (d.price ? 'Specifications on the store page.' : 'Price on request.')}</p>
+              <p class="dif-price num">{d.price ? formatAED(d.price) : 'Price on request'}</p>
+              <div class="dif-acts">
+                <AddButton kind="diffuser" id={d.code} label={d.code} meta={d.price ? formatAED(d.price) : 'Price on request'} division="aroma" url={d.url} text="Add" />
+                <a class="act act-buy" href={d.url} rel="noopener">{d.price ? 'Buy online' : 'View'}</a>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <p class="muted fine">Prices are as listed in the Global Aroma online store; checkout, delivery and payment happen on globalaroma.me.</p>
+    </div>
+  </section>
+
+  <section class="section tint" id="home-fragrance" aria-labelledby="home-h">
+    <div class="wrap split">
+      <div class="figure split-img reveal reed"><Image src={reed} alt="A reed diffuser on a stone ledge in warm evening light" widths={[640, 1000, 1400]} sizes="(max-width: 860px) 100vw, 50vw" /><span class="tag">Concept image</span></div>
+      <div class="split-body">
+        <p class="label label-muted kicker">Home fragrance</p>
+        <h2 class="h1" id="home-h">Candles, reed diffusers &amp; room spray.</h2>
+        <p class="body-copy">For hotel rooms and suites, spas, offices and homes. Candles give a warm, slow scent; reed diffusers a constant, quiet one; room sprays an instant refresh.</p>
+        <ul class="rows">
+          <li><span>Scented candles</span><AddButton kind="category" id="candles" label="Scented candles" division="aroma" /></li>
+          <li><span>Reed diffusers</span><AddButton kind="category" id="reed-diffusers" label="Reed diffusers" division="aroma" /></li>
+          <li><span>Room spray</span><AddButton kind="category" id="room-spray" label="Room spray" division="aroma" /></li>
+          <li><span>Car diffusers &amp; scent bottles</span><AddButton kind="category" id="car-diffusers" label="Car diffusers & scent bottles" division="aroma" /></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="sampler" aria-labelledby="box-h">
+    <div class="wrap split split-rev">
+      <div class="figure split-img reveal"><Image src={oil} alt="Amber fragrance oil being drawn from a glass bottle with a dropper" widths={[640, 1000]} sizes="(max-width: 860px) 100vw, 50vw" /><span class="tag">Concept image</span></div>
+      <div class="split-body">
+        <p class="label label-muted kicker">Scent box</p>
+        <h2 class="h1" id="box-h">Try 21 fragrances in the space itself.</h2>
+        <p class="body-copy">The Global Aroma scent box holds 21 fragrances in 5 ml bottles, including the latest additions to the collection. If there are scents you particularly want to try, name them in your order.</p>
+        <div class="a-cta">
+          <AddButton kind="category" id="scent-box" label="Scent box (21 × 5 ml)" division="aroma" text="Add scent box to brief" class="btn btn-line" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section dark sig-sec" id="signature" aria-labelledby="sig-h">
+    <div class="sig-art" aria-hidden="true"><Pattern behaviour="flow" w={1600} h={700} lines={30} seed="signature-scent" accent="#d08a55" /></div>
+    <div class="wrap sig-in">
+      <p class="label label-muted kicker">Signature scent</p>
+      <h2 class="mega" id="sig-h">A scent that is<br />only yours.</h2>
+      <div class="sig-side">
+        <p class="lead">A bespoke fragrance designed to match a brand’s identity, the same in every lobby, store and room it reaches.</p>
+        <a class="btn" href="/brief?need=signature">Discuss a signature scent</a>
+      </div>
+    </div>
+  </section>
+
+  <ScentDialog />
+  <script type="application/json" id="scent-data" set:html={JSON.stringify(clientScents())} />
+</Base>
+
+<script>
+  import '../scripts/scents-ui';
+</script>
+
+<style>
+  .a-hero { padding-block: clamp(2.5rem, 6vw, 5rem) clamp(3rem, 6vw, 5rem); }
+  .a-hero-in { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 2rem; row-gap: 2.5rem; align-items: center; }
+  .a-hero-copy { grid-column: 1 / span 6; display: grid; gap: 1.5rem; justify-items: start; }
+  .a-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .a-sig { grid-column: 8 / -1; margin: 0; display: grid; gap: 1rem; }
+  .a-sig a { display: block; }
+  .a-sig :global(svg) { width: 100%; height: auto; }
+  .a-sig figcaption { display: grid; gap: 0.2rem; border-top: var(--line); padding-top: 0.9rem; }
+  .a-sig-name { font-size: 1.4rem; }
+  .a-sig-notes { font-size: 0.85rem; }
+  @media (prefers-reduced-motion: no-preference) {
+    .a-sig :global(svg) { animation: breathe 14s ease-in-out infinite alternate; transform-origin: 50% 50%; }
+    @keyframes breathe { to { transform: rotate(-8deg) scale(1.02); } }
+  }
+  @media (max-width: 860px) { .a-hero-copy, .a-sig { grid-column: 1 / -1; } .a-sig { max-width: 30rem; } }
+
+  .subnav { position: sticky; top: var(--nav-h); z-index: 40; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-block: var(--line); }
+  .subnav-in { display: flex; gap: 1.75rem; overflow-x: auto; scrollbar-width: none; }
+  .subnav a { flex: none; padding: 0.85rem 0; font-size: 0.9rem; font-weight: 500; text-decoration: none; color: var(--ink-72); border-bottom: 2px solid transparent; }
+  .subnav a:hover { color: var(--ink); border-bottom-color: var(--aroma); }
+
+  .legend-steps { display: grid; grid-template-columns: repeat(3, 1fr); border-top: var(--line-strong); }
+  .legend-steps li { padding: 1.5rem 1.75rem 0 0; display: grid; gap: 0.7rem; align-content: start; }
+  .legend-steps li + li { padding-left: 1.75rem; border-left: var(--line); }
+  .legend-steps .num { color: var(--aroma); font-size: 0.85rem; }
+  .legend-acc { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; font-size: 0.8rem; color: var(--ink-72); }
+  .legend-acc span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  @media (max-width: 860px) { .legend-steps { grid-template-columns: 1fr; } .legend-steps li + li { padding-left: 0; border-left: 0; border-top: var(--line); padding-top: 1.5rem; margin-top: 1.5rem; } }
+
+  .lib { margin-top: clamp(3rem, 6vw, 5rem); }
+  .lib-tools { display: grid; grid-template-columns: minmax(16rem, 22rem) 1fr auto auto; gap: 1rem 1.5rem; align-items: center; padding-bottom: 1.5rem; border-bottom: var(--line-strong); margin-bottom: 2rem; }
+  .lib-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .lib-online { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; white-space: nowrap; cursor: pointer; }
+  .lib-online input { width: 1.1rem; height: 1.1rem; accent-color: var(--ink); }
+  .lib-count { white-space: nowrap; }
+  @media (max-width: 1100px) { .lib-tools { grid-template-columns: 1fr auto; } .lib-filters { grid-column: 1 / -1; order: 3; } .lib-search { grid-column: 1 / -1; } }
+  @media (max-width: 640px) { .lib-filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); } }
+  .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr)); gap: 2rem clamp(1rem, 2vw, 1.75rem); }
+  @media (max-width: 520px) { .lib-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem 1rem; } }
+  .lib-empty { padding: 3rem 0; }
+  .lib-more { display: flex; justify-content: center; margin-top: 2.5rem; }
+  .lib-more[hidden] { display: none; }
+
+  .more-oils { margin-top: clamp(3rem, 6vw, 5rem); border-top: var(--line-strong); }
+  .more-oils summary { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 1.25rem 0; cursor: pointer; list-style: none; flex-wrap: wrap; }
+  .more-oils summary::-webkit-details-marker { display: none; }
+  .more-oils summary .h3::after { content: ' +'; font-family: var(--f-mono); font-size: 0.9em; color: var(--ink-56); }
+  .more-oils[open] summary .h3::after { content: ' −'; }
+  .oil-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); column-gap: 2rem; }
+  .oil-list li { display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: center; padding: 0.6rem 0; border-bottom: var(--line); font-size: 0.95rem; }
+  .oil-acts { display: flex; gap: 0.9rem; }
+  @media (max-width: 480px) { .oil-list { grid-template-columns: 1fr; } .oil-list li { grid-template-columns: 1fr auto; } .oil-acts { grid-column: 1 / -1; } }
+
+  .dif-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); border-top: var(--line); border-left: var(--line); }
+  .dif { border-right: var(--line); border-bottom: var(--line); display: grid; grid-template-rows: auto 1fr; }
+  .dif-media { position: relative; aspect-ratio: 4 / 3; background: var(--paper-2); display: grid; place-items: center; overflow: hidden; }
+  .dif-media img { position: relative; width: 62%; height: 82%; object-fit: contain; mix-blend-mode: multiply; }
+  .dif-pict { position: absolute; width: 46%; top: 12%; left: 27%; color: var(--ink-32); opacity: 0; }
+  .noimg .dif-pict { opacity: 1; }
+  .dif-code { position: absolute; inset: auto auto 0.8rem 1rem; font-size: clamp(1.6rem, 2.6vw, 2.2rem); letter-spacing: -0.03em; color: var(--ink-16); }
+  .dif-tag { position: absolute; top: 0.75rem; left: 0.75rem; background: var(--hospitality); color: var(--paper); padding: 0.25rem 0.5rem; font-family: var(--f-mono); font-size: 0.62rem; letter-spacing: 0.08em; }
+  .dif-body { padding: 1.1rem 1.1rem 1rem; display: grid; gap: 0.4rem; align-content: start; }
+  .dif-name { font-family: var(--f-mono); font-weight: 500; font-size: 1rem; letter-spacing: -0.01em; }
+  .dif-note { font-size: 0.85rem; line-height: 1.45; min-height: 2.5em; }
+  .dif-price { font-size: 1rem; }
+  .dif-acts { display: flex; gap: 1.1rem; margin-top: 0.2rem; }
+  .fine { font-size: 0.82rem; margin-top: 1.25rem; }
+
+  .split { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 2rem; row-gap: 2rem; align-items: center; }
+  .split-img { grid-column: 1 / span 6; aspect-ratio: 5 / 4; }
+  .split-body { grid-column: 8 / -1; display: grid; gap: 1.25rem; justify-items: start; }
+  .split-rev .split-img { grid-column: 7 / -1; grid-row: 1; }
+  .split-rev .split-body { grid-column: 1 / span 5; grid-row: 1; }
+  .reed :global(img) { object-position: 78% 50%; }
+  .rows { width: 100%; border-top: var(--line); }
+  .rows li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 0; border-bottom: var(--line); }
+  @media (max-width: 860px) { .split-img, .split-body, .split-rev .split-img, .split-rev .split-body { grid-column: 1 / -1; grid-row: auto; } }
+
+  .sig-sec { position: relative; overflow: hidden; padding-block: clamp(6rem, 13vw, 12rem); }
+  .sig-art { position: absolute; inset: 0; opacity: 0.55; color: var(--paper); }
+  .sig-art :global(svg) { width: 100%; height: 100%; }
+  .sig-in { position: relative; display: grid; gap: 2rem; }
+  .sig-side { display: grid; gap: 1.5rem; justify-items: start; max-width: 32rem; margin-left: auto; }
+</style>

@@ -1,0 +1,23 @@
+---
+import DivisionPage from '../components/DivisionPage.astro';
+import { divisionById } from '../data/divisions';
+import img from '../assets/concept/guest-amenities.webp';
+---
+<DivisionPage
+  d={divisionById.hospitality}
+  hex="#3e5c50"
+  description="Global Hospitality supplies hotels, residences and restaurants: guest room linen and electrical, amenities, housekeeping and front-office trolleys, F&B linen and banquet furniture."
+  image={img}
+  imageAlt="Folded white towels and amber amenity bottles on a stone vanity"
+  spaces={[
+    { name: 'Hotels & serviced residences', line: 'Rooms, bathrooms, corridors and front of house.' },
+    { name: 'Restaurants & banqueting', line: 'Table linen and furniture for dining and events.' },
+    { name: 'Hospitals & clinics', line: 'Linen and service trolleys for patient areas.' },
+    { name: 'Residential buildings', line: 'Lobbies, amenities and shared spaces.' },
+  ]}
+  approach={[
+    { h: 'Tell us about the property', p: 'Type of property, number of rooms or covers, and which categories you need: a full opening or a top-up.' },
+    { h: 'Proposal', p: 'The team proposes ranges and quantities for each category and confirms specifications with you.' },
+    { h: 'Supply', p: 'Orders, delivery and any repeat supply are agreed with the Dubai team for your project.' },
+  ]}
+/>

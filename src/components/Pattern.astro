@@ -1,0 +1,7 @@
+---
+import { pattern, type Behaviour } from '../lib/patterns';
+interface Props { behaviour: Behaviour; w?: number; h?: number; lines?: number; seed?: string; accent?: string; class?: string; width?: number }
+const { behaviour, class: cls, ...o } = Astro.props;
+const svg = pattern(behaviour, o);
+---
+<div class:list={['pattern', `pattern-${behaviour}`, cls]} set:html={svg} />

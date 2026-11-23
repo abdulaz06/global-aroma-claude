@@ -1,0 +1,52 @@
+---
+/** Detail view for one fragrance; filled from the page's scent data. */
+---
+<dialog class="sdlg" data-scent-dialog aria-labelledby="sdlg-title">
+  <div class="sdlg-in">
+    <button class="sdlg-x btn btn-sm btn-line" type="button" data-close>Close</button>
+    <figure class="sdlg-fig"><img data-sig alt="" width="400" height="400" /><figcaption class="label label-muted">Signature: base notes inside, top notes outside</figcaption></figure>
+    <div class="sdlg-body">
+      <p class="label label-muted" data-family></p>
+      <h2 class="h1" id="sdlg-title" data-title></h2>
+      <p class="sdlg-mood serif" data-mood></p>
+      <dl class="sdlg-notes">
+        <div><dt class="label">Top</dt><dd data-top></dd></div>
+        <div><dt class="label">Heart</dt><dd data-heart></dd></div>
+        <div><dt class="label">Base</dt><dd data-base></dd></div>
+      </dl>
+      <div class="sdlg-acts">
+        <button type="button" class="btn" data-dlg-add>Add to brief</button>
+        <a class="btn btn-line" data-buy rel="noopener" hidden>Buy online <span class="ext" aria-hidden="true">↗</span></a>
+        <a class="act" data-wa rel="noopener">Ask on WhatsApp</a>
+      </div>
+      <p class="sdlg-store muted" data-store-note></p>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .sdlg { width: min(64rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); padding: 0; border: 0; background: var(--paper); color: var(--ink); box-shadow: 0 30px 80px rgba(26,23,20,0.28); }
+  .sdlg::backdrop { background: rgba(26, 23, 20, 0.45); backdrop-filter: blur(3px); }
+  .sdlg-in { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); position: relative; }
+  .sdlg-x { position: absolute; top: 1rem; right: 1rem; z-index: 2; background: var(--paper); }
+  .sdlg-fig { margin: 0; background: var(--paper-2); padding: clamp(1.5rem, 4vw, 3rem); display: grid; align-content: center; gap: 1rem; }
+  .sdlg-fig img { width: 100%; aspect-ratio: 1; }
+  .sdlg-body { padding: clamp(1.5rem, 4vw, 3rem); padding-top: clamp(3.5rem, 5vw, 3.5rem); display: grid; align-content: start; gap: 1.1rem; }
+  .sdlg-mood { font-size: 1.25rem; color: var(--ink-72); }
+  .sdlg-notes { margin: 0.5rem 0 0; border-top: var(--line); }
+  .sdlg-notes div { display: grid; grid-template-columns: 5rem 1fr; gap: 1rem; padding: 0.8rem 0; border-bottom: var(--line); }
+  .sdlg-notes dt { padding-top: 0.25rem; color: var(--ink-56); }
+  .sdlg-notes dd { margin: 0; }
+  .sdlg-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.25rem; margin-top: 0.5rem; }
+  .sdlg-store { font-size: 0.85rem; }
+  @media (prefers-reduced-motion: no-preference) {
+    .sdlg[open] { animation: dlg 0.45s var(--ease); }
+    @keyframes dlg { from { opacity: 0; transform: translateY(14px); } }
+  }
+  @media (max-width: 760px) {
+    .sdlg { width: 100vw; max-width: 100vw; max-height: 100dvh; height: 100dvh; margin: 0; }
+    .sdlg-in { grid-template-columns: 1fr; }
+    .sdlg-fig { padding: 3.5rem 18% 1.25rem; }
+    .sdlg-fig figcaption { text-align: center; }
+  }
+</style>

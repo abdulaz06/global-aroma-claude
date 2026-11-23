@@ -1,0 +1,23 @@
+---
+import DivisionPage from '../components/DivisionPage.astro';
+import { divisionById } from '../data/divisions';
+import img from '../assets/concept/data-centre.webp';
+---
+<DivisionPage
+  d={divisionById.technology}
+  hex="#3149b0"
+  description="Global Technology provides smart solutions, ICT and connectivity, digital signage, system integration, and support and maintenance for commercial buildings."
+  image={img}
+  imageAlt="Rows of server racks with status lights in a data centre"
+  spaces={[
+    { name: 'AI and data centres', line: 'Infrastructure, connectivity and ongoing support.' },
+    { name: 'Offices & IT', line: 'Networks, systems and integration.' },
+    { name: 'Hotels, malls & airports', line: 'Digital signage and guest-facing screens.' },
+    { name: 'Residential buildings', line: 'Smart building systems.' },
+  ]}
+  approach={[
+    { h: 'Requirements', p: 'Tell us about the building, the systems already in place and what you want them to do.' },
+    { h: 'Design & integration', p: 'The team proposes equipment and how it connects to what you already run.' },
+    { h: 'Support & maintenance', p: 'Once systems are running, support and maintenance keep them that way.' },
+  ]}
+/>

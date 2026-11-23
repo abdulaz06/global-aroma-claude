@@ -1,0 +1,93 @@
+---
+/**
+ * The Scent Map: every fragrance in the collection, placed by character
+ * computed from its notes (fresh → warm, light → deep). Dots are real links
+ * (to the library entry) so the map works without JavaScript; with JS, tapping
+ * an empty spot suggests the nearest scents, and dots open the detail view.
+ */
+import { scents } from '../lib/library';
+import { PIGMENT, ACCORD_LABEL, ACCORDS } from '../lib/accords';
+
+interface Props { compact?: boolean; id?: string; libraryHref?: string }
+const { compact = false, id = 'map', libraryHref = '' } = Astro.props;
+const used = ACCORDS.filter((a) => scents.some((s) => s.dominant[0] === a));
+---
+<div class:list={['smap', { compact }]} data-scent-map data-library-href={libraryHref} id={id}>
+  <div class="smap-legend" role="group" aria-label="Highlight by accord">
+    {used.map((a) => (
+      <button type="button" class="chip" data-accord={a} aria-pressed="false"><span class="dot" style={`background:${PIGMENT[a]}`} />{ACCORD_LABEL[a]}</button>
+    ))}
+  </div>
+  <div class="smap-frame">
+    <div class="smap-plane" data-plane>
+      <span class="smap-ylab smap-ytop label label-muted" aria-hidden="true">↑ Floral</span>
+      <span class="smap-ylab smap-ybot label label-muted" aria-hidden="true">↓ Woody</span>
+      <div class="smap-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <ul class="smap-dots" aria-label="Fragrances on the map">
+        {scents.map((s) => (
+          <li style={`left:${(s.x * 100).toFixed(2)}%;top:${(s.y * 100).toFixed(2)}%;--c:${PIGMENT[s.dominant[0]]}`} data-accords={s.dominant.join(' ')} data-side={s.x > 0.72 ? 'r' : s.x < 0.28 ? 'l' : 'c'} data-v={s.y < 0.12 ? 'b' : 't'}>
+            <a href={`${libraryHref}#scent-${s.slug}`} data-slug={s.slug} class="smap-dot" aria-label={`${s.title}, ${s.family}`}><span class="smap-name">{s.title}</span></a>
+          </li>
+        ))}
+      </ul>
+      <div class="smap-probe" data-probe hidden aria-hidden="true"></div>
+    </div>
+    <div class="smap-axis smap-x"><span aria-hidden="true">← Fresh</span><span class="smap-hint" data-hint>Tap anywhere on the map to find scents near that feeling</span><span aria-hidden="true">Warm →</span></div>
+  </div>
+  <div class="smap-panel" data-panel aria-live="polite">
+    <p class="label label-muted">Nearest to your point</p>
+    <ol data-near></ol>
+  </div>
+</div>
+
+<style>
+  .smap { --plane-h: clamp(26rem, 62vh, 40rem); display: grid; gap: 1.25rem; }
+  .smap.compact { --plane-h: clamp(22rem, 52vh, 32rem); }
+  .smap-legend { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .smap-frame { display: grid; gap: 0.6rem; }
+  .smap-axis { font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-56); display: flex; justify-content: space-between; }
+  .dark .smap-axis { color: var(--p-56); }
+  .smap-x { gap: 1rem; }
+  .smap-ylab { position: absolute; left: 0.75rem; pointer-events: none; z-index: 1; }
+  .smap-ytop { top: 0.6rem; } .smap-ybot { bottom: 0.6rem; }
+  .smap-plane { position: relative; height: var(--plane-h); border: var(--line); cursor: crosshair; touch-action: manipulation; }
+  .smap-grid { position: absolute; inset: 0; pointer-events: none; }
+  .smap-grid i { position: absolute; background: var(--ink-08); }
+  .dark .smap-grid i { background: var(--p-12); }
+  .smap-grid i:nth-child(1) { left: 50%; top: 0; bottom: 0; width: 1px; }
+  .smap-grid i:nth-child(2) { top: 50%; left: 0; right: 0; height: 1px; }
+  .smap-grid i:nth-child(3) { left: 25%; top: 0; bottom: 0; width: 1px; opacity: 0.5; }
+  .smap-grid i:nth-child(4) { left: 75%; top: 0; bottom: 0; width: 1px; opacity: 0.5; }
+  .smap-hint { text-align: center; transition: opacity 0.3s; text-transform: none; letter-spacing: 0.02em; }
+  @media (max-width: 640px) { .smap-hint { display: none; } }
+  .smap-dots { position: absolute; inset: 1.4rem; }
+  .smap-dots li { position: absolute; transform: translate(-50%, -50%); transition: opacity 0.3s; }
+  .smap-dots li:hover, .smap-dots li:focus-within { z-index: 4; }
+  .smap-dot { display: block; width: 1.9rem; height: 1.9rem; border-radius: 50%; position: relative; }
+  .smap-dot::before { content: ''; position: absolute; inset: 0.6rem; border-radius: 50%; background: var(--c); transition: transform 0.25s var(--ease), box-shadow 0.25s; box-shadow: 0 0 0 0 var(--c); }
+  .dark .smap-dot::before { background: color-mix(in srgb, var(--c) 72%, white); }
+  .smap-dot::after { content: ''; position: absolute; inset: 0.25rem; border-radius: 50%; border: 1px solid var(--c); opacity: 0; transition: opacity 0.25s, transform 0.35s var(--ease); transform: scale(0.6); }
+  .smap-dot:hover::before, .smap-dot:focus-visible::before, .smap-dot.near::before { transform: scale(1.35); }
+  .smap-dot:hover::after, .smap-dot:focus-visible::after, .smap-dot.near::after { opacity: 1; transform: scale(1); }
+  .smap-name { position: absolute; left: 50%; bottom: calc(100% + 0.2rem); transform: translateX(-50%); white-space: nowrap; font-size: 0.78rem; font-weight: 560; background: var(--ink); color: var(--paper); padding: 0.2rem 0.45rem; display: none; pointer-events: none; z-index: 3; }
+  [data-side='l'] .smap-name { left: 0.2rem; transform: none; }
+  [data-side='r'] .smap-name { left: auto; right: 0.2rem; transform: none; }
+  [data-v='b'] .smap-name { bottom: auto; top: calc(100% + 0.2rem); }
+  .dark .smap-name { background: var(--paper); color: var(--ink); }
+  .smap-dot:hover .smap-name, .smap-dot:focus-visible .smap-name, .smap-dot.near .smap-name { display: block; }
+  .smap-dot:focus-visible { outline-offset: 0; }
+  .smap-dots li.dim { opacity: 0.16; }
+  .smap-probe { position: absolute; width: 4.5rem; height: 4.5rem; margin: -2.25rem 0 0 -2.25rem; border: 1px solid currentColor; border-radius: 50%; pointer-events: none; }
+  .smap-probe::before, .smap-probe::after { content: ''; position: absolute; border: 1px solid currentColor; border-radius: 50%; opacity: 0.5; }
+  .smap-probe::before { inset: -1rem; } .smap-probe::after { inset: -2.2rem; opacity: 0.25; }
+  .smap-panel { min-height: 3rem; }
+  .smap-panel ol { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0 1.5rem; margin-top: 0.6rem; counter-reset: n; }
+  .smap-panel:not(.on) { display: none; }
+  @media (max-width: 640px) {
+    .smap { --plane-h: 26rem; }
+    .smap-legend { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }
+    .smap-dots { inset: 0.9rem; }
+    .smap-dot { width: 1.6rem; height: 1.6rem; }
+    .smap-dot::before { inset: 0.5rem; }
+  }
+</style>

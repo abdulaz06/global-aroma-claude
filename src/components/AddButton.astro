@@ -1,0 +1,8 @@
+---
+/** "Add to brief": the quote path. Pairs with .act-buy links (the store path). */
+interface Props { kind: 'scent' | 'diffuser' | 'category' | 'oil'; id: string; label: string; meta?: string; division: 'aroma' | 'hospitality' | 'technology'; url?: string; text?: string; class?: string }
+const { kind, id, label, meta, division, url, text = 'Add to brief', class: cls } = Astro.props;
+---
+<button type="button" class:list={[cls?.includes('btn') ? '' : 'act act-add', cls]} data-brief-add data-kind={kind} data-id={id} data-label={label} data-meta={meta} data-division={division} data-url={url} data-add-text={text} aria-pressed="false">
+  <span data-add-label>{text}</span><span class="vh">: {label}</span>
+</button>
