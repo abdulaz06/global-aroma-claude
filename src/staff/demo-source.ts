@@ -16,8 +16,11 @@ export interface DemoProduct { name: string; sku: string | null; price: number; 
 const KEY = 'ga-staff-demo-v1';
 const FIRST = ['Aisha', 'Omar', 'Layla', 'Rohan', 'Mariam', 'Daniel', 'Fatima', 'Yusuf', 'Hana', 'Karim', 'Sara', 'Arjun', 'Noor', 'Elena', 'Tariq', 'Priya', 'Zayed', 'Lina', 'Marco', 'Amira'];
 const INITIAL = 'ABDFHKMNRSTWZ';
-const CITIES = ['Dubai', 'Dubai', 'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Al Ain'];
-const AREAS = ['Business Bay', 'Jumeirah', 'Al Barsha', 'Dubai Marina', 'Al Nahda', 'Khalifa City', 'Al Majaz'];
+// Each area is paired with the emirate/city it is actually in.
+const PLACES: [area: string, city: string][] = [
+  ['Business Bay', 'Dubai'], ['Jumeirah', 'Dubai'], ['Al Barsha', 'Dubai'], ['Dubai Marina', 'Dubai'],
+  ['Khalifa City', 'Abu Dhabi'], ['Al Majaz', 'Sharjah'], ['Al Nuaimiya', 'Ajman'], ['Al Jimi', 'Al Ain'],
+];
 const SHIPPING = 25;
 const VAT = 0.05;
 
@@ -28,13 +31,13 @@ const hex = (r: () => number, n = 6) => Array.from({ length: n }, () => '0123456
 function customer(r: () => number, i: number) {
   const first = FIRST[i % FIRST.length];
   const init = INITIAL[Math.floor(r() * INITIAL.length)];
-  const city = CITIES[Math.floor(r() * CITIES.length)];
+  const [area, city] = PLACES[Math.floor(r() * PLACES.length)];
   return {
     name: `${first} ${init}.`,
     email: `${first.toLowerCase()}.${init.toLowerCase()}${10 + (i % 80)}@example.com`,
     phone: `+971 50 000 0${String(100 + Math.floor(r() * 899))}`,
     city, country: 'AE',
-    address: `${10 + Math.floor(r() * 180)} Sample Street, ${AREAS[Math.floor(r() * AREAS.length)]}, ${city}`,
+    address: `${10 + Math.floor(r() * 180)} Sample Street, ${area}, ${city}`,
   };
 }
 
