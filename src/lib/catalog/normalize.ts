@@ -17,7 +17,8 @@ const CATEGORY: Record<string, Product['category']> = { oils: 'oils', diffusers:
 
 export function normalizeProduct(p: Raw, variationDetails: Map<number, Raw> = new Map()): Product | null {
   if (!p || typeof p.id !== 'number' || typeof p.name !== 'string' || typeof p.permalink !== 'string') return null;
-  if (!/^https:\/\/globalaroma\.me\//.test(p.permalink)) return null;
+  // The store or a subdomain of it (e.g. shop.globalaroma.me after a migration, doc 14).
+  if (!/^https:\/\/([a-z0-9-]+\.)?globalaroma\.me\//.test(p.permalink)) return null;
   const cat = (p.categories ?? []).map((c: Raw) => CATEGORY[c?.slug]).find(Boolean);
   if (!cat) return null; // only the merchant's real catalogue categories
   const unit = p.prices?.currency_minor_unit;
