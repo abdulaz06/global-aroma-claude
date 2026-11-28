@@ -191,8 +191,13 @@ document.addEventListener('click', (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>('[data-open-product]');
   if (b) { e.preventDefault(); openProduct(+b.dataset.openProduct!, b); }
 });
-const m = location.hash.match(/^#p-(\d+)$/);
-if (m) requestAnimationFrame(() => openProduct(+m[1]));
+// Deep links (#p-5390) open the product, on load and on in-page hash changes.
+function openFromHash() {
+  const m = location.hash.match(/^#p-(\d+)$/);
+  if (m && !dlg.open) requestAnimationFrame(() => openProduct(+m[1]));
+}
+openFromHash();
+window.addEventListener('hashchange', openFromHash);
 
 /* ── live price & stock refresh ─────────────────── */
 const fresh = document.querySelector<HTMLElement>('[data-fresh]')!;

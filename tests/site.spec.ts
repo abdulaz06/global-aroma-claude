@@ -202,6 +202,9 @@ test('shop: product dialog deep-links and shows the notes source', async ({ page
   await expect(dlg.locator('[data-pd-cart]')).toHaveAttribute('href', STORE);
   await page.keyboard.press('Escape');
   await expect(dlg).toBeHidden();
+  // In-page hash change opens a product too.
+  await page.evaluate(() => { location.hash = '#p-5243'; });
+  await expect(dlg).toBeVisible();
 });
 
 test('shop: freshness label never claims live prices when the store is unreachable', async ({ page }) => {
