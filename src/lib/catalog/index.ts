@@ -68,6 +68,8 @@ export function clientProducts() {
     collectionTitle: p.scent?.title ?? null, notesMatch: p.notesMatch, notesSource: p.notesSource,
     signature: p.signature, flags: p.flags,
     volumes: p.variations.map((v) => ({ volume: v.volume, purchasable: v.purchasable })),
+    // Volumes the store's product page offers to buy (only the priced one).
+    offered: p.variations.filter((v) => v.purchasable && v.volume).map((v) => v.volume as string),
   }));
 }
 export type ClientProduct = ReturnType<typeof clientProducts>[number];

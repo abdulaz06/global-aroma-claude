@@ -11,6 +11,7 @@ import AddButton from './AddButton.astro';
 interface Props { p: ShopProduct; eager?: boolean; detailsHref?: string }
 const { p, eager = false, detailsHref } = Astro.props;
 const Media = detailsHref ? 'a' : 'button';
+const vol = p.buy.option ?? p.variations.find((v) => v.purchasable && v.volume)?.volume ?? null;
 const mediaProps: Record<string, string | number> = detailsHref ? { href: `${detailsHref}#p-${p.id}`, tabindex: -1 } : { type: 'button', 'data-open-product': p.id };
 const text = [p.title, p.name, p.sku, p.summary, p.scent?.family, ...(p.scent ? [...p.scent.top, ...p.scent.heart, ...p.scent.base] : [])].filter(Boolean).join(' ').toLowerCase();
 ---
@@ -44,7 +45,7 @@ const text = [p.title, p.name, p.sku, p.summary, p.scent?.family, ...(p.scent ? 
       : <p class="pc-sum">{p.summary ?? (p.category === 'oils' ? 'Notes on request.' : '')}</p>}
     <p class="pc-price">
       {p.purchasable
-        ? <><span class="num" data-price-label>{formatAED(p.price!)}</span>{p.buy.option && <span class="pc-opt">{p.buy.option}</span>}</>
+        ? <><span class="num" data-price-label>{formatAED(p.price!)}</span>{vol && <span class="pc-opt">{vol}</span>}</>
         : <span class="num">Price on request</span>}
     </p>
     <div class="pc-acts">

@@ -308,7 +308,8 @@ test('staff walkthrough steps tick off in order', async ({ page }) => {
   await page.getByTestId('step-simulate').click();
   await expect(page.getByTestId('toast')).toBeVisible();
   await page.getByTestId('step-open').click();
-  await expect(page.getByTestId('order-detail')).toContainText('Volume:');
+  await expect(page.getByTestId('order-detail')).toContainText(/Items \([0-9]+\)/);
+  await expect(page.getByTestId('order-detail')).toContainText('Total');
   await page.keyboard.press('Escape');
   await page.getByTestId('step-email').click();
   await expect(page.getByTestId('email-preview')).toContainText('No email has been sent');

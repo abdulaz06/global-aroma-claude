@@ -142,7 +142,7 @@ function openProduct(id: number, from?: HTMLElement | null) {
   $('[data-pd-kind]').textContent = p.category === 'oils' ? (p.notes ? `Diffuser oil · ${p.notes.family}` : 'Diffuser oil') : 'Diffuser';
   $('[data-pd-title]').textContent = p.title;
   $('[data-pd-price]').textContent = p.purchasable && p.price ? fmt(p.price) : 'Price on request';
-  $('[data-pd-opt]').textContent = p.buy.option ? `· ${p.buy.option}` : '';
+  $('[data-pd-opt]').textContent = p.offered[0] ? `· ${p.offered[0]}` : '';
   $('[data-pd-stock]').textContent = '';
   $('[data-pd-sum]').textContent = p.summary ?? '';
   const notes = $('[data-pd-notes]');
@@ -159,10 +159,9 @@ function openProduct(id: number, from?: HTMLElement | null) {
     src.insertAdjacentHTML('beforeend', `<span class="pd-flag" style="display:block;margin-top:.5rem">These notes are the same as <b>${esc(p.collectionTitle)}</b> in the published collection. Global Aroma is confirming the listing.</span>`);
   } else if (flags.length) src.insertAdjacentHTML('beforeend', `<span class="pd-flag" style="display:block;margin-top:.5rem">${esc(flags[0])}</span>`);
   const vols = $('[data-pd-vols]');
-  const labelled = p.volumes.filter((v) => v.volume);
-  vols.innerHTML = labelled.length
-    ? '<span class="label label-muted" style="width:100%">Volume options listed on the store</span>' + labelled.map((v) => `<span class="pd-vol">${esc(v.volume!)}</span>`).join('')
-      + (p.buy.cartUrl ? '' : '<span class="pd-vol-note">Choose the volume on the store, which shows its price and availability.</span>')
+  vols.innerHTML = p.offered.length
+    ? '<span class="label label-muted" style="width:100%">Volume offered online</span>' + p.offered.map((v) => `<span class="pd-vol">${esc(v)}</span>`).join('')
+      + (p.buy.cartUrl ? '' : '<span class="pd-vol-note">Select it on the store, which confirms the price and availability.</span>')
     : '';
   const cart = $<HTMLAnchorElement>('[data-pd-cart]');
   cart.hidden = !(p.purchasable && p.buy.cartUrl);

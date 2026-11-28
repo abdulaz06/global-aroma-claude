@@ -8,3 +8,7 @@ social/out/*.tmp
 .DS_Store
 *.log
 src/generated/
+
+# Proposal render scratch
+proposal/.render.html
+proposal/*.pdf

@@ -11,7 +11,8 @@
     "check": "astro check",
     "social": "node scripts/render-social.mjs",
     "reel": "node scripts/render-reel.mjs",
-    "test:unit": "node --import tsx --test tests/unit/*.test.ts"
+    "test:unit": "node --import tsx --test tests/unit/*.test.ts",
+    "proposal": "node scripts/render-proposal.mjs"
   },
   "keywords": [],
   "author": "",
