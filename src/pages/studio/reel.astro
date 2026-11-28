@@ -8,7 +8,6 @@ import '../../styles/global.css';
 import plan from '../../social/plan.json';
 import { scentBySlug } from '../../lib/library';
 import { signatureRings, signatureOrigin } from '../../lib/signature';
-import { formatAED } from '../../data/diffusers';
 
 const reels = plan.reels.map((r) => {
   const s = scentBySlug[r.scent];
@@ -19,10 +18,10 @@ const reels = plan.reels.map((r) => {
 const mark = (c: string, n = 72) => `<svg width="${n}" height="${n}" viewBox="0 0 40 40" fill="none"><path d="M20.6 3.4c9.3.2 16.2 7.1 16 16.6-.2 9.4-7.6 16.6-17 16.4C10.4 36.2 3.4 29.3 3.5 20.2 3.7 10.8 11.3 3.2 20.6 3.4Z" stroke="${c}" stroke-width="1.4"/><path d="M19.3 9.6c6.4.1 11 4.9 10.8 11.1-.1 6.1-5 10.7-11.2 10.6-6-.2-10.4-4.8-10.3-10.6.1-6.3 4.8-11.2 10.7-11.1Z" stroke="${c}" stroke-width="1.4"/><path d="M17.9 15.4c3 .1 5.2 2.4 5.1 5.3 0 2.9-2.4 5-5.3 5-2.8-.1-4.9-2.3-4.8-5.1 0-2.9 2.2-5.3 5-5.2Z" stroke="${c}" stroke-width="1.4"/><circle cx="16.6" cy="20.6" r="1.6" fill="${c}"/></svg>`;
 ---
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8" /><meta name="robots" content="noindex, nofollow" /><title>Reel stage</title></head>
+<html lang="en"><head><meta charset="utf-8" /><meta name="robots" content="noindex, nofollow" /><meta name="viewport" content="width=device-width, initial-scale=1" /><link rel="icon" href="/favicon.svg" type="image/svg+xml" /><title>Reel stage</title></head>
 <body class="reel-body">
   {reels.map((r) => (
-    <section class="reel" id={r.id} data-reel data-seconds={r.seconds}>
+    <div class="reel-fit"><section class="reel" id={r.id} data-reel data-seconds={r.seconds}>
       <p class="r-k fx-mono" data-in="0.3,1.2">Global Aroma · Scent signature</p>
       <svg class="r-sig" viewBox="0 0 860 860" width="860" height="860" fill="none">
         <g data-spin>
@@ -35,9 +34,9 @@ const mark = (c: string, n = 72) => `<svg width="${n}" height="${n}" viewBox="0 
         <p data-layer-label="heart"><span class="fx-mono">Heart</span><span class="fx-serif">{r.s.heart.join(', ')}</span></p>
         <p data-layer-label="top"><span class="fx-mono">Top</span><span class="fx-serif">{r.s.top.join(', ')}</span></p>
       </div>
-      <div class="r-name" data-in="7.2,8.2"><h2 class="fx-serif">{r.s.title}</h2><p class="fx-mono">{r.s.family}{r.s.store ? ` · Diffuser oil ${formatAED(r.s.store.price)} online` : ''}</p></div>
+      <div class="r-name" data-in="7.2,8.2"><h2 class="fx-serif">{r.s.title}</h2><p class="fx-mono">{r.s.family}{r.s.store ? ' · Diffuser oil online' : ''}</p></div>
       <div class="r-end" data-in="10.2,11"><span set:html={mark('#f2eee7')} /><p class="fx-serif">Every scent<br />has a shape.</p><p class="fx-mono">globalaroma.me</p></div>
-    </section>
+    </section></div>
   ))}
   <script is:inline>
     const ease = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
@@ -69,11 +68,20 @@ const mark = (c: string, n = 72) => `<svg width="${n}" height="${n}" viewBox="0 
       el.style.setProperty('--end', ease((t - 10) / 0.9));
     };
     document.querySelectorAll('[data-reel]').forEach((r) => window.reelAt(r.id, 0));
+    // Narrow screens: scale the 1080×1920 stage to fit. At the renderer's
+    // 1080px viewport the scale is exactly 1, so frames are unaffected.
+    const fit = () => document.querySelectorAll('.reel-fit').forEach((w) => {
+      const s = Math.min(1, w.parentElement.clientWidth / 1080);
+      w.style.setProperty('--fit', s);
+    });
+    fit(); addEventListener('resize', fit);
   </script>
 </body></html>
 
 <style is:global>
-  .reel-body { margin: 0; background: #000; }
+  .reel-body { margin: 0; background: #000; overflow-x: hidden; }
+  .reel-fit { --fit: 1; width: calc(1080px * var(--fit)); height: calc(1920px * var(--fit)); overflow: hidden; }
+  .reel-fit > .reel { transform: scale(var(--fit)); transform-origin: 0 0; }
   .reel { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--f-sans); --end: 0; }
   .reel::after { content: ''; position: absolute; inset: 0; background: var(--ink); opacity: var(--end); z-index: 1; }
   .fx-serif { font-family: var(--f-serif); font-optical-sizing: auto; letter-spacing: -0.025em; }

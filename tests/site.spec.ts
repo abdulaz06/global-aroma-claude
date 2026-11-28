@@ -297,3 +297,22 @@ test('live staff endpoint is disabled, private and read-only', async ({ request 
   const w = await request.post('/api/staff/orders.json', { data: {} });
   expect([403, 405]).toContain(w.status());
 });
+
+test('studio tools: favicon, content maker download, reel fits small screens', async ({ page, request }) => {
+  expect((await request.get('/favicon.ico')).status()).toBe(200);
+  const errors = watch(page);
+  await page.goto('/studio/make/');
+  await expect(page.locator('link[rel=icon]')).toHaveAttribute('href', '/favicon.svg');
+  await expect(page.locator('meta[name=robots]')).toHaveAttribute('content', /noindex/);
+  await expect(page.getByText('Nothing is uploaded, saved or posted')).toBeVisible();
+  await page.waitForSelector('canvas[data-ready]');
+  await page.getByText('Story / reel cover').click();
+  await expect.poll(() => page.locator('canvas').evaluate((c: HTMLCanvasElement) => `${c.width}x${c.height}`)).toBe('1080x1920');
+  const dl = page.waitForEvent('download');
+  await page.click('[data-download]');
+  expect((await dl).suggestedFilename()).toMatch(/^global-aroma-.+-1080x1920\.png$/);
+  await page.goto('/studio/reel/');
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+  expect(errors).toEqual([]);
+});

@@ -14,7 +14,11 @@ import { pattern } from '../../lib/patterns';
 import { fieldSVG } from '../../lib/flowfield';
 import { ACCORD_LABEL, PIGMENT } from '../../lib/accords';
 import { divisionById } from '../../data/divisions';
-import { formatAED } from '../../data/diffusers';
+import { getImage } from 'astro:assets';
+import reedImg from '../../assets/concept/reed-diffuser.webp';
+import oilImg from '../../assets/concept/fragrance-oil.webp';
+import amenitiesImg from '../../assets/concept/guest-amenities.webp';
+import hotelImg from '../../assets/concept/hotel-lobby.webp';
 
 type F = (typeof plan.frames)[number] & Record<string, any>;
 const frames = plan.frames as F[];
@@ -22,6 +26,11 @@ const HEX: Record<string, string> = { aroma: '#b4612a', hospitality: '#3e5c50', 
 const sig = (slug: string, size: number, hair = 2.4, extra: Record<string, unknown> = {}) => signatureSVG(scentBySlug[slug], { size, hairline: hair, ...extra });
 const markSVG = (c = '#1a1714', s = 56) => `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none"><path d="M20.6 3.4c9.3.2 16.2 7.1 16 16.6-.2 9.4-7.6 16.6-17 16.4C10.4 36.2 3.4 29.3 3.5 20.2 3.7 10.8 11.3 3.2 20.6 3.4Z" stroke="${c}" stroke-width="1.4"/><path d="M19.3 9.6c6.4.1 11 4.9 10.8 11.1-.1 6.1-5 10.7-11.2 10.6-6-.2-10.4-4.8-10.3-10.6.1-6.3 4.8-11.2 10.7-11.1Z" stroke="${c}" stroke-width="1.4"/><path d="M17.9 15.4c3 .1 5.2 2.4 5.1 5.3 0 2.9-2.4 5-5.3 5-2.8-.1-4.9-2.3-4.8-5.1 0-2.9 2.2-5.3 5-5.2Z" stroke="${c}" stroke-width="1.4"/><circle cx="16.6" cy="20.6" r="1.6" fill="${c}"/></svg>`;
 const fieldSm = fieldSVG(1200, 630, 22);
+// Photo frames use the concept photography until approved photos replace it
+// (swap the file in src/assets and re-render; the layout does not change).
+const PHOTO_SRC = { reed: reedImg, oil: oilImg, amenities: amenitiesImg, hotel: hotelImg } as const;
+const PHOTO: Record<string, string> = Object.fromEntries(await Promise.all(Object.entries(PHOTO_SRC).map(async ([k, v]) => [k, (await getImage({ src: v, width: 1400, format: 'jpeg', quality: 84 })).src])));
+const sigInk = (slug: string, size: number) => signatureSVG(scentBySlug[slug], { size, mode: 'ink', ink: '#f2eee7', hairline: 1.6 });
 ---
 <!doctype html>
 <html lang="en">
@@ -29,19 +38,20 @@ const fieldSm = fieldSVG(1200, 630, 22);
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <title>Social studio — Global Aroma (concept)</title>
 </head>
 <body class="studio">
   <header class="studio-head">
     <h1>Social studio</h1>
-    <p>{frames.length} frames from <code>src/social/plan.json</code>. Rendered by <code>npm run social</code>. <a href="?safe">Show safe zones</a> · <a href="?">Hide</a></p>
+    <p>{frames.length} frames from <code>src/social/plan.json</code>. Rendered by <code>npm run social</code>. <a href="?safe">Show safe zones</a> · <a href="?">Hide</a> · <a href="/studio/make/">Make a one-off post →</a></p>
   </header>
   <div class="studio-grid">
     {frames.map((f) => {
       const s = f.scent ? scentBySlug[f.scent] : null;
       return (
         <figure class="studio-item">
-          <figcaption>{f.id} · {f.w}×{f.h}</figcaption>
+          <figcaption>{f.id} · {f.w}×{f.h}{f.photo && ' · concept photo: replace with approved photography before publishing'}</figcaption>
           <div class="frame-scale" style={`--w:${f.w};--h:${f.h}`}>
             <section class:list={['frame', `t-${f.type}`]} id={f.id} data-frame data-safe={f.safe} style={`width:${f.w}px;height:${f.h}px`}>
 
@@ -100,7 +110,18 @@ const fieldSm = fieldSVG(1200, 630, 22);
                   <div><dt class="fx-mono">Heart</dt><dd>{s.heart.join(', ')}</dd></div>
                   <div><dt class="fx-mono">Base</dt><dd>{s.base.join(', ')}</dd></div>
                 </dl>
-                <p class="fx-mono sp-foot"><span>{s.store ? `Diffuser oil · ${formatAED(s.store.price)} online` : 'Ask for formats and volumes'}</span><span>globalaroma.me</span></p>
+                <p class="fx-mono sp-foot"><span>{s.store ? 'Diffuser oil · order online' : 'Ask for formats and volumes'}</span><span>globalaroma.me</span></p>
+              </>)}
+
+              {(f.type === 'photo-post' || f.type === 'photo-story') && s && (<>
+                <img class="ph-img" src={PHOTO[String(f.photo)]} alt="" style={f.focus ? `object-position:${f.focus}` : undefined} />
+                <div class:list={['ph-shade', { strong: f.shade === 'strong' }]} />
+                <div class="fx-top"><span class="fx-brand" set:html={markSVG('#f2eee7') + '<span>Global Aroma</span>'} /><span class="fx-mono">{f.kicker ?? s.family}</span></div>
+                <div class="ph-sig" set:html={sigInk(s.slug, f.type === 'photo-story' ? 820 : 700)} />
+                <div class="ph-copy">
+                  <h2 class="fx-serif">{f.headline ?? s.title}</h2>
+                  <p class="fx-mono ph-foot"><span>{f.sub ?? `${s.top[0]} · ${s.heart[0]} · ${s.base[0]}`}</span><span>globalaroma.me</span></p>
+                </div>
               </>)}
 
               {f.type === 'divisions-post' && (<>
@@ -282,6 +303,18 @@ const fieldSm = fieldSVG(1200, 630, 22);
   .ce-sub { position: absolute; left: var(--m); top: 500px; width: 760px; font-size: 36px; line-height: 1.4; color: var(--p-72); }
   .ce-link { position: absolute; left: var(--m); bottom: var(--m); color: var(--paper); }
 
+  .t-photo-post, .t-photo-story { color: var(--paper); background: #1a1714; }
+  .ph-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ph-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,12,0.5) 0%, rgba(20,16,12,0) 22%, rgba(20,16,12,0) 45%, rgba(20,16,12,0.86) 100%); }
+  .ph-shade.strong { background: linear-gradient(180deg, rgba(20,16,12,0.6) 0%, rgba(20,16,12,0.38) 30%, rgba(20,16,12,0.45) 55%, rgba(20,16,12,0.9) 100%); }
+  .ph-sig { position: absolute; right: 40px; top: 170px; opacity: 0.92; }
+  .t-photo-story .ph-sig { right: 60px; top: 330px; }
+  .ph-copy { position: absolute; left: var(--m); right: var(--m); bottom: var(--m); display: grid; gap: 28px; }
+  .t-photo-story .ph-copy { bottom: 330px; }
+  .ph-copy h2 { font-size: 118px; line-height: 0.98; font-weight: 400; margin: 0; max-width: 9ch; }
+  .ph-foot { display: flex; justify-content: space-between; gap: 24px; font-size: 22px; color: rgba(242,238,231,0.82); border-top: 2px solid rgba(242,238,231,0.5); padding-top: 22px; }
+  .t-photo-post .fx-top, .t-photo-story .fx-top { color: var(--paper); }
+  .t-photo-story .fx-top { top: 230px; }
   .sp-sig { position: absolute; left: 50%; top: 150px; width: 700px; height: 700px; margin-left: -350px; }
   .sp-n { position: absolute; left: var(--m); top: 860px; font-size: 96px; line-height: 1; }
   .sp-notes { position: absolute; left: var(--m); right: var(--m); top: 990px; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; border-top: 2px solid var(--ink); padding-top: 20px; }
