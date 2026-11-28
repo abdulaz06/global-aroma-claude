@@ -1,0 +1,36 @@
+---
+/**
+ * Staff Workspace demonstration. Public, synthetic data only, never
+ * connected to live orders (see src/staff/demo-source.ts and
+ * src/lib/server/staff-guard.ts).
+ */
+import '../../styles/global.css';
+import '../../styles/staff.css';
+import StaffApp from '../../components/staff/StaffApp.tsx';
+import { shopProducts } from '../../lib/catalog';
+
+const products = shopProducts
+  .filter((p) => p.purchasable && p.price)
+  // Sample lines show the volume the store prices (500 ml) for variable oils.
+  .map((p) => ({ name: p.title, sku: p.sku, price: p.price!, option: p.type === 'variable' ? '500 ml' : null }));
+---
+<!doctype html>
+<html lang="en-AE">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Staff Workspace (demonstration) — Global Aroma</title>
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="description" content="Demonstration of a staff order view for Global Aroma, using sample data only." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#f7f5f0" />
+</head>
+<body class="staff-body">
+  <a class="skip" href="#staff-main">Skip to orders</a>
+  <noscript><p class="sw-demo" style="position:static">Demonstration. This interactive demo needs JavaScript. It uses sample data only.</p></noscript>
+  <main id="staff-main"><StaffApp client:load products={products} /></main>
+  <footer class="sw-foot">
+    <p>Concept for Global DWC LLC, pending owner approval. Synthetic orders generated in your browser; customer names, contacts, dates, transaction references and payments are fictional. Product names and prices are from the public Global Aroma catalogue. <a href="/">Back to the website</a> · <a href="/review/">Owner review guide</a></p>
+  </footer>
+</body>
+</html>

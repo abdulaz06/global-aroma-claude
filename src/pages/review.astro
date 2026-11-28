@@ -1,0 +1,114 @@
+---
+/**
+ * Owner review guide (proposal preview only; remove at launch). A short,
+ * self-explanatory tour for Global Aroma's founders, linking to each part of
+ * the demonstration. Not part of the customer navigation.
+ */
+import Base from '../layouts/Base.astro';
+import { Image } from 'astro:assets';
+import website from '../assets/review/website.jpg';
+import discovery from '../assets/review/discovery.jpg';
+import shop from '../assets/review/shop.jpg';
+import staff from '../assets/review/staff.jpg';
+import maker from '../assets/review/maker.jpg';
+
+const stops = [
+  {
+    n: '01', title: 'The website', href: '/', cta: 'Open the website', img: website,
+    alt: 'Home page: a reed diffuser photograph with a fragrance signature drawn over it',
+    text: 'A photographic, premium first impression for the group, with clear paths to shop or ask for a quote, and dedicated pages for Aroma, Hospitality and Technology.',
+    also: [{ label: 'Global Aroma', href: '/aroma' }, { label: 'Global Hospitality', href: '/hospitality' }, { label: 'Global Technology', href: '/technology' }],
+  },
+  {
+    n: '02', title: 'Fragrance discovery', href: '/aroma#finder-sec', cta: 'Find a fragrance', img: discovery,
+    alt: 'Scent Finder: choose how a space should feel and see matching fragrances',
+    text: 'Choose how a space should feel and see the closest fragrances, matched by their published notes. Or explore all 67 on the Scent Map and in the searchable library.',
+    also: [{ label: 'Scent Map', href: '/aroma#map' }, { label: 'Fragrance library', href: '/aroma#library' }],
+  },
+  {
+    n: '03', title: 'Shop', href: '/shop', cta: 'Open the Shop', img: shop,
+    alt: 'Shop: diffuser oils with fragrance signatures, prices and Buy on the store buttons',
+    text: 'All 62 products listed on the Global Aroma store, with search, filters and product details. Buying continues on globalaroma.me, which handles checkout and payment as it does today.',
+    also: [{ label: 'Quote request (Brief)', href: '/brief' }],
+  },
+  {
+    n: '04', title: 'Staff Workspace', href: '/staff-demo', cta: 'Try the Staff Workspace', img: staff, demo: true,
+    alt: 'Staff Workspace demonstration: order list, counters and a new-order notification',
+    text: 'How staff could see every order: who bought what, the volume and quantity, when, for how much, and its status. Simulate a new order, open it, view the example alert, then reset.',
+  },
+  {
+    n: '05', title: 'Social Content Maker', href: '/studio/make', cta: 'Make a post', img: maker,
+    alt: 'Content Maker: fragrance, photograph, format and text choices beside a live preview',
+    text: 'Staff can make on-brand posts in a minute: choose a fragrance, a photograph and a format, edit the words, and download the image. Nothing is uploaded or posted.',
+    also: [{ label: 'Ready-made social designs', href: '/studio' }],
+  },
+];
+---
+<Base title="Owner review guide" description="A short tour of the Global Aroma proposal: the website, fragrance discovery, Shop, Staff Workspace and Content Maker." review>
+  <section class="rv-head">
+    <div class="wrap rv-head-in">
+      <p class="label kicker">Owner review guide</p>
+      <h1 class="hero-t">A short tour of the proposal.</h1>
+      <p class="lead">This is a working concept prepared for Global Aroma’s founders. Explore the website as a customer would, then try the demonstrations below. Each takes a minute or two.</p>
+    </div>
+  </section>
+
+  <section class="rv-list">
+    <div class="wrap">
+      <ol class="rv-stops">
+        {stops.map((s) => (
+          <li class="rv-stop">
+            <a class="rv-img" href={s.href} tabindex="-1" aria-hidden="true">
+              <Image src={s.img} alt="" widths={[560, 900]} sizes="(max-width: 860px) 100vw, 45vw" loading="lazy" />
+            </a>
+            <div class="rv-body">
+              <p class="rv-n label">{s.n}{s.demo && <span class="rv-tag">Demonstration · sample data</span>}</p>
+              <h2 class="h1 rv-t">{s.title}</h2>
+              <p class="body-copy">{s.text}</p>
+              <p class="rv-acts">
+                <a class="btn" href={s.href}>{s.cta} →</a>
+                {s.also?.map((a) => <a class="link" href={a.href}>{a.label}</a>)}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section tint rv-note">
+    <div class="wrap rv-note-in">
+      <h2 class="h2">Good to know</h2>
+      <ul>
+        <li>This is an unofficial working concept, not the live website. Nothing here places real orders, sends messages or reads customer data.</li>
+        <li>Prices and products were taken from the Global Aroma store on 28 November 2026. The store remains responsible for current prices, stock, checkout and payment.</li>
+        <li>The Staff Workspace uses fictional orders. It shows what we can deliver; it does not mean the current notification issue has been fixed.</li>
+        <li>Photographs marked “Concept” are illustrative and would be replaced with Global Aroma’s own approved photography and branding.</li>
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .rv-head { padding-block: clamp(3rem, 8vw, 6rem) clamp(2rem, 4vw, 3rem); }
+  .rv-head-in { display: grid; gap: 1.2rem; max-width: 52rem; }
+  .rv-head .kicker { color: var(--aroma-text); }
+  .rv-list { padding-bottom: clamp(3rem, 7vw, 6rem); }
+  .rv-stops { list-style: none; padding: 0; margin: 0; display: grid; gap: clamp(2.5rem, 6vw, 5rem); }
+  .rv-stop { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: center; border-top: var(--line); padding-top: clamp(1.5rem, 3vw, 2.5rem); }
+  .rv-stop:nth-child(even) .rv-img { order: 2; }
+  .rv-img { display: block; border: var(--line); box-shadow: 0 18px 50px rgba(26, 23, 20, 0.12); overflow: hidden; }
+  .rv-img :global(img) { width: 100%; height: auto; display: block; transition: transform 1s var(--ease); }
+  .rv-img:hover :global(img) { transform: scale(1.02); }
+  .rv-body { display: grid; gap: 0.9rem; }
+  .rv-n { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; color: var(--ink-56); }
+  .rv-tag { background: #f3dba6; color: #3d2a05; padding: 0.15rem 0.5rem; font-size: 0.68rem; letter-spacing: 0.04em; }
+  .rv-t { margin: 0; }
+  .rv-acts { display: flex; flex-wrap: wrap; gap: 0.75rem 1.4rem; align-items: center; margin-top: 0.4rem; }
+  .rv-note-in { display: grid; gap: 1rem; max-width: 60rem; }
+  .rv-note ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.6rem; color: var(--ink-72); }
+  @media (max-width: 860px) {
+    .rv-stop { grid-template-columns: 1fr; }
+    .rv-stop:nth-child(even) .rv-img { order: 0; }
+  }
+</style>

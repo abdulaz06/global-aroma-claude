@@ -1,0 +1,278 @@
+---
+import { safeJson } from '../../lib/safe-json';
+/**
+ * Content maker (internal, unlisted, noindex). A staff-friendly front end to
+ * the social templates: pick a format, a layout, a fragrance and a photo, edit
+ * the words, download a PNG. Everything runs in the browser. Nothing is
+ * uploaded, stored or posted anywhere.
+ */
+import '../../styles/global.css';
+import { getImage } from 'astro:assets';
+import { scents } from '../../lib/library';
+
+import reed from '../../assets/concept/reed-diffuser.webp';
+import oil from '../../assets/concept/fragrance-oil.webp';
+import amenities from '../../assets/concept/guest-amenities.webp';
+import hotel from '../../assets/concept/hotel-lobby.webp';
+import restaurant from '../../assets/concept/restaurant.webp';
+import mall from '../../assets/concept/mall.webp';
+
+const photoSrc = [
+  { id: 'reed', label: 'Reed diffuser', img: reed, fx: 0.8 },
+  { id: 'oil', label: 'Fragrance oil', img: oil },
+  { id: 'amenities', label: 'Guest amenities', img: amenities },
+  { id: 'hotel', label: 'Hotel lobby', img: hotel },
+  { id: 'restaurant', label: 'Restaurant', img: restaurant },
+  { id: 'mall', label: 'Mall atrium', img: mall },
+];
+const photos = await Promise.all(photoSrc.map(async (p) => ({ id: p.id, label: p.label, fx: (p as { fx?: number }).fx ?? 0.5, src: (await getImage({ src: p.img, width: 1600, format: 'jpeg', quality: 82 })).src })));
+const scentData = scents.map((s) => ({ slug: s.slug, title: s.title, family: s.family, top: s.top, heart: s.heart, base: s.base, online: !!s.store }))
+  .sort((a, b) => a.title.localeCompare(b.title));
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <title>Content maker — Global Aroma</title>
+</head>
+<body class="mk">
+  <p class="mk-banner">Demonstration tool · Everything stays in this browser: nothing is uploaded, saved or posted. Photos marked “concept” are illustrative and would be replaced with Global Aroma’s approved photography. <a href="/review/">Owner review guide</a></p>
+  <main class="mk-main">
+    <form class="mk-panel" data-form onsubmit="return false">
+      <h1>Content maker</h1>
+      <p class="mk-lede">Make an on-brand post in four steps. Each fragrance’s signature is drawn from its notes, so every scent looks like itself.</p>
+
+      <section class="mk-step"><h2><span>1</span> Choose a fragrance</h2>
+      <label class="mk-field">Fragrance
+        <select name="scent">{scentData.map((s) => <option value={s.slug} selected={s.slug === 'arabic-coffee'}>{s.title}</option>)}</select>
+      </label>
+
+      </section>
+
+      <section class="mk-step"><h2><span>2</span> Choose a photograph and format</h2>
+      <fieldset>
+        <legend>Style</legend>
+        <div class="mk-seg">
+          <label><input type="radio" name="layout" value="photo" checked /> Photo + signature</label>
+          <label><input type="radio" name="layout" value="signature" /> Signature</label>
+          <label><input type="radio" name="layout" value="notes" /> Notes card</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Format</legend>
+        <div class="mk-seg">
+          <label><input type="radio" name="format" value="1080x1350" checked /> Feed post <small>4:5</small></label>
+          <label><input type="radio" name="format" value="1080x1920" /> Story / reel cover <small>9:16</small></label>
+          <label><input type="radio" name="format" value="1200x1200" /> Square / LinkedIn <small>1:1</small></label>
+        </div>
+      </fieldset>
+
+      <fieldset data-photo-set>
+        <legend>Photograph <small>(for the “Photo + signature” style)</small></legend>
+        <div class="mk-photos">
+          {photos.map((p, i) => <label class="mk-ph"><input type="radio" name="photo" value={p.src} data-fx={p.fx} checked={i === 0} /><img src={p.src} alt="" width="96" height="72" loading="lazy" /><span>{p.label} <em>concept</em></span></label>)}
+        </div>
+        <label class="mk-upload">Or use your own approved photo <input type="file" accept="image/*" data-upload /></label>
+      </fieldset>
+
+      </section>
+
+      <section class="mk-step"><h2><span>3</span> Customize the text</h2>
+      <label class="mk-field">Headline <input name="headline" maxlength="60" placeholder="Defaults to the fragrance name" /></label>
+      <label class="mk-field">Small line <input name="sub" maxlength="70" placeholder="Defaults to the fragrance family" /></label>
+      <label class="mk-field">Footer <input name="cta" maxlength="40" value="globalaroma.me" /></label>
+      <label class="mk-check"><input type="checkbox" name="safe" /> Show platform safe zones (not exported)</label>
+
+      </section>
+
+      <section class="mk-step"><h2><span>4</span> Download</h2>
+      <div class="mk-actions">
+        <button type="button" class="btn" data-download>Download PNG</button>
+        <span class="mk-size" data-size></span>
+      </div>
+      <p class="mk-fine">Prices are left off on purpose: they change, and posts stay up. Link to the product instead. For the full planned set, see the <a href="/studio/">social studio</a>.</p>
+      </section>
+    </form>
+
+    <div class="mk-stage"><div class="mk-cw" data-cw><canvas data-canvas width="1080" height="1350" aria-label="Preview of the post"></canvas></div></div>
+  </main>
+
+  <script type="application/json" id="mk-scents" set:html={safeJson(scentData)} />
+  <script>
+    type S = { slug: string; title: string; family: string; top: string[]; heart: string[]; base: string[]; online: boolean };
+    const scents: S[] = JSON.parse(document.getElementById('mk-scents')!.textContent!);
+    const form = document.querySelector<HTMLFormElement>('[data-form]')!;
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-canvas]')!;
+    const ctx = canvas.getContext('2d')!;
+    const PAPER = '#f2eee7', INK = '#1a1714', MUTED = 'rgba(26,23,20,0.6)';
+    const SERIF = '"Newsreader Variable", Georgia, serif', SANS = '"Schibsted Grotesk Variable", Arial, sans-serif', MONO = '"JetBrains Mono", Menlo, monospace';
+    const MARK = (c: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 40 40" fill="none"><path d="M20.6 3.4c9.3.2 16.2 7.1 16 16.6-.2 9.4-7.6 16.6-17 16.4C10.4 36.2 3.4 29.3 3.5 20.2 3.7 10.8 11.3 3.2 20.6 3.4Z" stroke="${c}" stroke-width="1.4"/><path d="M19.3 9.6c6.4.1 11 4.9 10.8 11.1-.1 6.1-5 10.7-11.2 10.6-6-.2-10.4-4.8-10.3-10.6.1-6.3 4.8-11.2 10.7-11.1Z" stroke="${c}" stroke-width="1.4"/><path d="M17.9 15.4c3 .1 5.2 2.4 5.1 5.3 0 2.9-2.4 5-5.3 5-2.8-.1-4.9-2.3-4.8-5.1 0-2.9 2.2-5.3 5-5.2Z" stroke="${c}" stroke-width="1.4"/><circle cx="16.6" cy="20.6" r="1.6" fill="${c}"/></svg>`;
+
+    const cache = new Map<string, HTMLImageElement>();
+    function load(src: string): Promise<HTMLImageElement> {
+      if (cache.has(src)) return Promise.resolve(cache.get(src)!);
+      return new Promise((res, rej) => { const i = new Image(); i.onload = () => { cache.set(src, i); res(i); }; i.onerror = rej; i.src = src; });
+    }
+    const svgUrl = (svg: string) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    const sigText = new Map<string, string>();
+    async function signature(slug: string, light: boolean) {
+      if (!sigText.has(slug)) sigText.set(slug, await (await fetch(`/sig/${slug}.svg`)).text());
+      let svg = sigText.get(slug)!;
+      if (light) svg = svg.replace(/stroke="#[0-9a-fA-F]{3,8}"/g, `stroke="${PAPER}"`).replace(/fill="#[0-9a-fA-F]{3,8}"/g, `fill="${PAPER}"`);
+      svg = svg.replace(/width="400" height="400"/, 'width="1600" height="1600"');
+      return load(svgUrl(svg));
+    }
+    function wrap(text: string, maxW: number) {
+      const words = text.split(/\s+/); const lines: string[] = []; let line = '';
+      for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+      if (line) lines.push(line); return lines;
+    }
+    function mono(text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = 'left') {
+      ctx.font = `500 ${size}px ${MONO}`; ctx.fillStyle = color; ctx.textAlign = align;
+      (ctx as any).letterSpacing = `${size * 0.06}px`; ctx.fillText(text.toUpperCase(), x, y); (ctx as any).letterSpacing = '0px';
+    }
+    async function brand(x: number, y: number, color: string, u: number) {
+      ctx.drawImage(await load(svgUrl(MARK(color))), x, y, 56 * u, 56 * u);
+      ctx.font = `600 ${30 * u}px ${SANS}`; ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.fillText('Global Aroma', x + 72 * u, y + 38 * u);
+    }
+    let upload: string | null = null;
+    let token = 0;
+
+    async function draw() {
+      const my = ++token;
+      const fd = new FormData(form);
+      const [W, H] = String(fd.get('format')).split('x').map(Number);
+      const layout = String(fd.get('layout'));
+      const s = scents.find((x) => x.slug === fd.get('scent'))!;
+      const headline = String(fd.get('headline') || '').trim() || s.title;
+      const sub = String(fd.get('sub') || '').trim() || s.family;
+      const cta = String(fd.get('cta') || '').trim();
+      const tall = H / W > 1.5;
+      const u = W / 1080, pad = 80 * u;
+      const photoSrc = upload || String(fd.get('photo'));
+      // Load everything first so a slower earlier draw never paints over a newer one.
+      const [sig, photo] = await Promise.all([signature(s.slug, layout === 'photo'), layout === 'photo' ? load(photoSrc) : Promise.resolve(null)]);
+      await document.fonts.ready;
+      if (my !== token) return;
+      canvas.width = W; canvas.height = H;
+      document.querySelector('[data-size]')!.textContent = `${W} × ${H} px`;
+
+      if (layout === 'photo' && photo) {
+        const r = Math.max(W / photo.width, H / photo.height);
+        const pw = photo.width * r, ph = photo.height * r;
+        // Crop towards the subject: each concept photo carries a horizontal focus.
+        const fx = upload ? 0.5 : Number(form.querySelector<HTMLInputElement>('input[name=photo]:checked')?.dataset.fx ?? 0.5);
+        ctx.drawImage(photo, (W - pw) * fx, (H - ph) / 2, pw, ph);
+        const g = ctx.createLinearGradient(0, H * 0.35, 0, H);
+        g.addColorStop(0, 'rgba(20,16,12,0)'); g.addColorStop(1, 'rgba(20,16,12,0.85)');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        const t = ctx.createLinearGradient(0, 0, 0, 240 * u); t.addColorStop(0, 'rgba(20,16,12,0.45)'); t.addColorStop(1, 'rgba(20,16,12,0)');
+        ctx.fillStyle = t; ctx.fillRect(0, 0, W, 240 * u);
+        const sz = W * 0.62; ctx.globalAlpha = 0.92; ctx.drawImage(sig, W - sz - pad * 0.4, tall ? 260 * u : 120 * u, sz, sz); ctx.globalAlpha = 1;
+        await brand(pad, (tall ? 220 : 70) * u, PAPER, u);
+        ctx.fillStyle = PAPER; ctx.textAlign = 'left'; ctx.font = `400 ${120 * u}px ${SERIF}`;
+        const lines = wrap(headline, W - pad * 2);
+        const base = H - (tall ? 380 : 170) * u;
+        lines.forEach((l, i) => ctx.fillText(l, pad, base - (lines.length - 1 - i) * 118 * u));
+        mono(sub, pad, base + 70 * u, 26 * u, 'rgba(242,238,231,0.8)');
+        if (cta) mono(cta, W - pad, base + 70 * u, 26 * u, 'rgba(242,238,231,0.8)', 'right');
+      } else {
+        ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
+        await brand(pad, (tall ? 220 : 70) * u, INK, u);
+        if (layout === 'notes') {
+          const sz = Math.min(W, H) * 0.56;
+          ctx.drawImage(sig, (W - sz) / 2, (tall ? 360 : 160) * u, sz, sz);
+          ctx.fillStyle = INK; ctx.textAlign = 'left'; ctx.font = `400 ${92 * u}px ${SERIF}`;
+          let y = (tall ? 360 : 160) * u + sz + 110 * u;
+          wrap(headline, W - pad * 2).forEach((l) => { ctx.fillText(l, pad, y); y += 92 * u; });
+          y += 10 * u;
+          for (const [k, v] of [['Top', s.top], ['Heart', s.heart], ['Base', s.base]] as const) {
+            ctx.strokeStyle = 'rgba(26,23,20,0.18)'; ctx.lineWidth = 2 * u; ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+            mono(k, pad, y + 46 * u, 22 * u, MUTED);
+            ctx.font = `400 ${36 * u}px ${SERIF}`; ctx.fillStyle = INK; ctx.textAlign = 'left';
+            ctx.fillText(wrap(v.join(', '), W - pad * 2 - 220 * u)[0], pad + 220 * u, y + 50 * u);
+            y += 86 * u;
+          }
+          mono(sub, pad, H - (tall ? 260 : 70) * u, 24 * u, MUTED);
+          if (cta) mono(cta, W - pad, H - (tall ? 260 : 70) * u, 24 * u, MUTED, 'right');
+        } else {
+          const sz = W * 0.86;
+          ctx.drawImage(sig, (W - sz) / 2, (tall ? 380 : 150) * u, sz, sz);
+          ctx.fillStyle = INK; ctx.textAlign = 'left'; ctx.font = `400 ${118 * u}px ${SERIF}`;
+          const lines = wrap(headline, W - pad * 2);
+          const base = H - (tall ? 400 : 170) * u;
+          lines.forEach((l, i) => ctx.fillText(l, pad, base - (lines.length - 1 - i) * 114 * u));
+          mono(sub, pad, base + 70 * u, 26 * u, MUTED);
+          if (cta) mono(cta, W - pad, base + 70 * u, 26 * u, MUTED, 'right');
+        }
+      }
+      canvas.dataset.safe = fd.get('safe') ? (tall ? 'story' : 'feed') : '';
+      canvas.dataset.ready = String(my);
+    }
+
+    function safeOverlay() {
+      // Drawn on a separate layer so it is never exported.
+      const st = document.querySelector<HTMLElement>('[data-cw]')!;
+      st.dataset.safe = canvas.dataset.safe || '';
+    }
+    form.addEventListener('input', () => { draw().then(safeOverlay); });
+    form.addEventListener('change', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.matches('[data-upload]') && t.files?.[0]) { if (upload) URL.revokeObjectURL(upload); upload = URL.createObjectURL(t.files[0]); (form.querySelector('input[value="photo"]') as HTMLInputElement).checked = true; }
+      if (t.name === 'photo') upload = null;
+      document.querySelector<HTMLElement>('[data-photo-set]')!.classList.toggle('dim', new FormData(form).get('layout') !== 'photo');
+      draw().then(safeOverlay);
+    });
+    document.querySelector('[data-download]')!.addEventListener('click', () => {
+      const s = String(new FormData(form).get('scent'));
+      canvas.toBlob((b) => { if (!b) return; const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `global-aroma-${s}-${canvas.width}x${canvas.height}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }, 'image/png');
+    });
+    draw();
+  </script>
+</body>
+</html>
+
+<style is:global>
+  .mk { margin: 0; background: #e6e0d6; color: var(--ink); font-family: var(--f-sans); }
+  .mk-banner { margin: 0; padding: 0.6rem 1.25rem; background: var(--ink); color: var(--paper); font-size: 0.82rem; }
+  .mk-main { display: grid; grid-template-columns: minmax(18rem, 26rem) 1fr; gap: 2rem; padding: 1.5rem; align-items: start; }
+  .mk-panel { display: grid; gap: 1.1rem; background: var(--paper); padding: 1.5rem; border: var(--line); }
+  .mk-banner a { color: inherit; text-decoration: underline; margin-left: 0.4rem; }
+  .mk-step { display: grid; gap: 0.9rem; border-top: var(--line); padding-top: 1rem; }
+  .mk-step h2 { margin: 0; font-size: 1rem; font-weight: 650; display: flex; gap: 0.6rem; align-items: center; }
+  .mk-step h2 span { width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-size: 0.8rem; }
+  .mk-panel h1 { font-family: var(--f-serif); font-weight: 400; font-size: 2rem; letter-spacing: -0.02em; margin: 0; }
+  .mk-lede, .mk-fine { font-size: 0.85rem; color: var(--ink-72); margin: 0; }
+  .mk fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 0.5rem; transition: opacity 0.2s; }
+  .mk fieldset.dim { opacity: 0.45; }
+  .mk legend { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-56); margin-bottom: 0.4rem; }
+  .mk-seg { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .mk-seg label { display: inline-flex; gap: 0.4rem; align-items: center; border: 1px solid var(--ink-32); padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.88rem; min-height: 2.75rem; }
+  .mk-seg label:has(input:checked) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .mk-seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .mk-seg small { opacity: 0.6; }
+  .mk-field { display: grid; gap: 0.35rem; font-size: 0.85rem; font-weight: 600; }
+  .mk-field input, .mk-field select { font: inherit; font-weight: 400; padding: 0.6rem 0.7rem; border: 1px solid var(--ink-32); background: #fff; min-height: 2.75rem; }
+  .mk-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+  .mk-ph { display: grid; gap: 0.25rem; font-size: 0.72rem; cursor: pointer; }
+  .mk-ph input { position: absolute; opacity: 0; }
+  .mk-ph img { width: 100%; aspect-ratio: 4/3; object-fit: cover; outline: 2px solid transparent; outline-offset: 1px; }
+  .mk-ph:has(input:checked) img { outline-color: var(--ink); }
+  .mk-ph:has(input:focus-visible) img { outline: 3px solid var(--aroma); }
+  .mk-ph em { font-style: normal; color: var(--ink-56); }
+  .mk-upload { font-size: 0.8rem; display: grid; gap: 0.3rem; }
+  .mk-check { font-size: 0.85rem; display: flex; gap: 0.5rem; align-items: center; }
+  .mk-actions { display: flex; gap: 1rem; align-items: center; }
+  .mk-size { font-family: var(--f-mono); font-size: 0.75rem; color: var(--ink-56); }
+  .mk-stage { position: sticky; top: 1.5rem; display: grid; place-items: center; }
+  .mk-stage canvas { max-width: 100%; max-height: calc(100vh - 6rem); width: auto; height: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.18); background: var(--paper); }
+  .mk-cw { position: relative; display: inline-block; line-height: 0; }
+  .mk-cw[data-safe='feed']::after, .mk-cw[data-safe='story']::after { content: ''; position: absolute; pointer-events: none; border: 2px dashed rgba(220,40,40,0.75); }
+  .mk-cw[data-safe='story']::after { inset: 13% 6% 18% 6%; }
+  .mk-cw[data-safe='feed']::after { inset: 4% 5%; }
+  @media (max-width: 860px) { .mk-main { grid-template-columns: 1fr; padding: 0.75rem; } .mk-stage { position: static; order: -1; } .mk-stage canvas { max-height: 70vh; } }
+</style>

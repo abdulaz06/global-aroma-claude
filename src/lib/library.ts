@@ -1,4 +1,5 @@
-import { rawScents, storeOils, type RawScent } from '../data/scents';
+import { rawScents, type RawScent } from '../data/scents';
+import { storeByCollection } from './catalog/source';
 import { ACCORDS, accordOf, DEPTH, WARMTH, type Accord } from './accords';
 
 export interface Scent extends RawScent {
@@ -14,7 +15,7 @@ export interface Scent extends RawScent {
   /** Position on the map, 0..1: x fresh → warm, y floral → woody. */
   x: number;
   y: number;
-  store?: { url: string; price: number };
+  store?: { id: number; url: string; cartUrl: string | null; price: number; option: string | null };
 }
 
 const LAYER_WEIGHT = { top: 0.7, heart: 1, base: 1.35 } as const;
@@ -69,7 +70,7 @@ function build(): Scent[] {
     // The collection lists MAREXY ED twice (two families); keep both, distinct URLs.
     if (seen.has(slug)) slug = `${slug}-${slugify(s.family)}`;
     seen.set(slug, 1);
-    return { ...s, slug, title: titleCase(s.name), ...analyse(s), store: storeOils[s.name] };
+    return { ...s, slug, title: titleCase(s.name), ...analyse(s), store: undefined as Scent['store'] };
   });
   // Woodiness rises with warmth across the collection; remove most of that
   // shared trend so the two axes say different things and the plane fills.
@@ -88,6 +89,7 @@ function build(): Scent[] {
   const minD = Math.min(...partial.map((p) => p.woodiness)), maxD = Math.max(...partial.map((p) => p.woodiness));
   return partial.map((p, i) => ({
     ...p,
+    store: storeByCollection[p.slug],
     x: 0.55 * rw[i] + 0.45 * ((p.warmth - minW) / (maxW - minW || 1)),
     y: 0.55 * rd[i] + 0.45 * ((p.woodiness - minD) / (maxD - minD || 1)),
   }));
@@ -101,6 +103,7 @@ export function clientScents() {
   return scents.map((s) => ({
     slug: s.slug, title: s.title, family: s.family, top: s.top, heart: s.heart, base: s.base, mood: s.mood,
     dominant: s.dominant, x: +s.x.toFixed(4), y: +s.y.toFixed(4), store: s.store ?? null,
+    acc: Object.fromEntries(Object.entries(s.accords).filter(([, v]) => v > 0).map(([k, v]) => [k, +v.toFixed(3)])),
   }));
 }
 export type ClientScent = ReturnType<typeof clientScents>[number];

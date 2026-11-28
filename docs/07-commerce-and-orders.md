@@ -126,14 +126,17 @@ Record the result of each row (pass / fail / not checked) before deciding what t
 | GA-OV-5 Pro, Rad 0, "Reed Diffusers & Candles" have no price | Diffusers | Concept shows "Price on request" and links to the product page |
 | "Get in touch" buttons on product pages and the Contact form's "Send a message" link to `#` | Product and Contact pages | Dead ends |
 
-## 10. What the concept frontend does about all this
+## 10. What the concept frontend does about all this (updated in Phase B)
 
-- Every "Buy online ↗" opens the product's own WooCommerce page, so orders keep landing in the one system that records them.
-- Prices shown are the store's listed prices on 23 Nov 2026. Missing prices say "Price on request", and the sampler is quote-only.
+- The Shop lists all 62 published products with prices from the store and a freshness label (doc 11). **"Add to cart ↗"** uses WooCommerce's own add-to-cart URL for the verified priced variation, so the item arrives in the store's own cart. Checkout, payment, order records and emails stay entirely in WooCommerce.
+- Unpriced items are "Request a quote"; the sampler stays quote-only.
 - Pages say plainly that checkout happens on globalaroma.me, and never say an order or quote has been sent or received.
-- The Brief prepares a quote request (who, contact, space, shortlist) for the visitor to send from their own app.
+- The Brief prepares a quote request for the visitor to send from their own app.
+- `/staff-demo` shows staff what good order visibility looks like, using synthetic data only (doc 12).
 
-## 11. Possible later improvements (need admin access and approval)
-- "Add to cart" deep links (`/?add-to-cart=<product ID>&variation_id=<ID>`) once product and variation IDs are confirmed.
-- Per-volume prices on the Shop page once variation pricing is fixed.
-- A store cleanup pass covering §9.
+## 11. Next steps
+
+- **Notifications:** follow the step-by-step plan in **doc 13**.
+- **Staff visibility:** Option A (WooCommerce screens, Shop manager accounts) first; Option B (read-only interface) only if needed. See **doc 12**.
+- **Store cleanup:** doc 11 §3 and §9 above.
+- **Going live without breaking checkout:** **doc 14**.

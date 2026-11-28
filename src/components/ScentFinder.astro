@@ -1,0 +1,85 @@
+---
+/**
+ * Scent Finder: the simple way in. Pick a space (context for your brief) and a
+ * feeling; get the closest fragrances by their published notes. The space is
+ * NOT used to rank scents. No fragrance-to-space pairings are claimed.
+ */
+interface Props { id?: string; compact?: boolean; libraryHref?: string; dark?: boolean }
+const { id = 'finder', compact = false, libraryHref = '', dark = false } = Astro.props;
+const spaces = ['Hotel lobby', 'Restaurant', 'Office', 'Retail store', 'Spa or gym', 'Home'];
+const moods = [
+  { id: 'fresh', label: 'Fresh & clean', hint: 'citrus, green, marine' },
+  { id: 'floral', label: 'Light & floral', hint: 'florals, fruit' },
+  { id: 'warm', label: 'Warm & welcoming', hint: 'vanilla, amber, spice' },
+  { id: 'woody', label: 'Woody & refined', hint: 'cedar, sandalwood, vetiver' },
+  { id: 'soft', label: 'Soft & calm', hint: 'musk, powdery florals' },
+  { id: 'rich', label: 'Rich & oriental', hint: 'oud, incense, leather' },
+];
+---
+<div class:list={['finder', { compact, dark }]} id={id} data-finder data-library-href={libraryHref}>
+  <div class="f-step">
+    <p class="f-q" id={`${id}-space-l`}><span class="num">1</span> Where is it for? <span class="f-opt">Optional</span></p>
+    <div class="f-chips" role="group" aria-labelledby={`${id}-space-l`}>
+      {spaces.map((s) => <button type="button" class="chip f-space" data-space={s} aria-pressed="false">{s}</button>)}
+    </div>
+  </div>
+  <div class="f-step">
+    <p class="f-q" id={`${id}-mood-l`}><span class="num">2</span> How should it feel?</p>
+    <div class="f-moods" role="group" aria-labelledby={`${id}-mood-l`}>
+      {moods.map((m) => <button type="button" class="f-mood" data-mood={m.id} aria-pressed="false"><b>{m.label}</b><span>{m.hint}</span></button>)}
+    </div>
+  </div>
+  <div class="f-out" data-f-out aria-live="polite">
+    <p class="f-empty muted" data-f-empty>Choose a feeling to see matching fragrances from the collection.</p>
+    <div data-f-results hidden>
+      <p class="f-head"><span data-f-title></span></p>
+      <ol class="f-list" data-f-list></ol>
+      <div class="f-foot">
+        <button type="button" class="act" data-f-more>Show three more</button>
+        <a class="act" data-f-brief href="/brief">Add the space to a brief →</a>
+      </div>
+      <p class="f-fine muted">Matched by each fragrance’s published notes. The space you choose goes into your brief so the team can advise; it doesn’t change the matches.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .finder { display: grid; gap: 1.5rem; }
+  .f-step { display: grid; gap: 0.75rem; }
+  .f-q { font-weight: 600; display: flex; align-items: baseline; gap: 0.6rem; }
+  .f-q .num { font-size: 0.75rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: inline-grid; place-items: center; border: 1px solid currentColor; }
+  .f-opt { font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-56); font-weight: 500; }
+  .dark .f-opt { color: var(--p-56); }
+  .f-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .f-chips .chip { min-height: 2.75rem; }
+  .f-moods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+  .f-mood { display: grid; gap: 0.15rem; text-align: left; padding: 0.9rem 1rem; min-height: 4.25rem; border: 1px solid var(--ink-32); border-radius: var(--radius); background: transparent; cursor: pointer; color: inherit; transition: border-color 0.2s, background 0.2s; }
+  .f-mood span { font-size: 0.8rem; color: var(--ink-56); }
+  .f-mood:hover { border-color: var(--ink); }
+  .f-mood[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .f-mood[aria-pressed='true'] span { color: var(--p-72); }
+  .dark .f-mood { border-color: var(--p-24); }
+  .dark .f-mood span { color: var(--p-56); }
+  .dark .f-mood:hover { border-color: var(--paper); }
+  .dark .f-mood[aria-pressed='true'] { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+  .dark .f-mood[aria-pressed='true'] span { color: var(--ink-56); }
+  @media (max-width: 640px) { .f-moods { grid-template-columns: 1fr 1fr; } }
+  .f-out { border-top: var(--line); padding-top: 1.25rem; min-height: 4rem; }
+  .f-head { font-family: var(--f-serif); font-size: 1.5rem; letter-spacing: -0.015em; margin-bottom: 0.75rem; }
+  .f-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  @media (max-width: 760px) { .f-list { grid-template-columns: 1fr; gap: 0; } }
+  .f-foot { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 1rem; }
+  .dark .f-foot .act, .dark .f-foot a { color: var(--paper); }
+  .f-fine { font-size: 0.8rem; margin-top: 0.75rem; }
+</style>
+<style is:global>
+  .f-item { display: grid; grid-template-columns: 4.5rem 1fr; gap: 0.9rem; align-items: start; padding: 0.9rem; border: var(--line); }
+  .f-item img { width: 4.5rem; height: 4.5rem; background: var(--paper); border-radius: 50%; padding: 0.25rem; }
+  .f-item-name { font-family: var(--f-serif); font-size: 1.25rem; letter-spacing: -0.01em; line-height: 1.15; text-decoration: none; display: block; }
+  .f-item-name:hover { text-decoration: underline; text-decoration-thickness: 1px; }
+  .f-item-why { font-size: 0.82rem; color: var(--ink-72); margin-top: 0.2rem; }
+  .dark .f-item-why { color: var(--p-72); }
+  .f-item-acts { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; margin-top: 0.4rem; }
+  .dark .f-item-acts .act { color: var(--paper); }
+  @media (max-width: 760px) { .f-item { border-width: 0 0 1px; padding: 0.9rem 0; } }
+</style>

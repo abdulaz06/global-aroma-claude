@@ -1,0 +1,13 @@
+{
+  "id": 727, "number": "727", "status": "processing", "currency": "AED", "created_via": "checkout",
+  "date_created_gmt": "2026-11-20T10:15:00", "date_paid_gmt": "2026-11-20T10:16:10",
+  "billing": { "first_name": "Fixture", "last_name": "Person", "company": "", "address_1": "1 Example Road", "address_2": "", "city": "Dubai", "state": "", "country": "AE", "email": "fixture@example.com", "phone": "+971500000000" },
+  "line_items": [
+    { "name": "ARABIC COFFEE - 500ml", "sku": "GA-701831-A", "quantity": 2, "price": 280, "total": "560.00",
+      "meta_data": [ { "key": "pa_volume", "display_key": "Volume", "display_value": "500ml" }, { "key": "_reduced_stock", "display_key": "_reduced_stock", "display_value": "2" } ] },
+    { "name": "GA-OV-1", "sku": "", "quantity": 1, "price": 190, "total": "190.00", "meta_data": [] }
+  ],
+  "shipping_total": "25.00", "total_tax": "0.00", "total": "775.00",
+  "payment_method": "stripe", "payment_method_title": "Credit card (Stripe)", "transaction_id": "pi_FIXTURE123", "customer_note": "",
+  "meta_data": [ { "key": "_stripe_card_last4", "value": "4242" } ]
+}
