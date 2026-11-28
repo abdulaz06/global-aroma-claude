@@ -12,7 +12,8 @@
     "social": "node scripts/render-social.mjs",
     "reel": "node scripts/render-reel.mjs",
     "sync:catalog": "tsx scripts/sync-catalog.ts",
-    "prebuild": "tsx scripts/sync-catalog.ts"
+    "prebuild": "tsx scripts/sync-catalog.ts",
+    "test:unit": "node --import tsx --test tests/unit/*.test.ts"
   },
   "keywords": [],
   "author": "",
