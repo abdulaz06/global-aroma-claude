@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import ScentMap from '../components/ScentMap.astro';
+import ScentFinder from '../components/ScentFinder.astro';
 import ScentCard from '../components/ScentCard.astro';
 import ScentDialog from '../components/ScentDialog.astro';
 import AddButton from '../components/AddButton.astro';
@@ -46,7 +47,7 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
 
   <nav class="subnav" aria-label="On this page">
     <div class="wrap subnav-in">
-      <a href="#library">Collection</a><a href="#diffusers">Diffusers</a><a href="#home-fragrance">Home fragrance</a><a href="#sampler">Scent box</a><a href="#signature">Signature scent</a>
+      <a href="#finder-sec">Find a scent</a><a href="#library">Collection</a><a href="#diffusers">Diffusers</a><a href="#home-fragrance">Home fragrance</a><a href="#sampler">Scent box</a><a href="#signature">Signature scent</a>
     </div>
   </nav>
 
@@ -61,6 +62,17 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
         <li class="reveal"><span class="num">B</span><h3 class="h3">One line per note</h3><p class="muted">Each line is one ingredient, coloured by its accord.</p><p class="legend-acc">{usedAccords.map((a) => <span><i class="dot" style={`background:${PIGMENT[a]}`} />{ACCORD_LABEL[a]}</span>)}</p></li>
         <li class="reveal"><span class="num">C</span><h3 class="h3">Sillage</h3><p class="muted">The rings drift in one direction, the way a scent trails through a room. Fresh scents drift further, spicy ones ripple, deep ones swell.</p></li>
       </ol>
+    </div>
+  </section>
+
+  <section class="section dark" id="finder-sec" aria-labelledby="find-h">
+    <div class="wrap a-find">
+      <div class="a-find-intro">
+        <p class="label label-muted kicker">Not sure where to start?</p>
+        <h2 class="h1" id="find-h">Start with a feeling.</h2>
+        <p class="muted">Pick how the space should feel; we’ll show the closest fragrances from the collection. Prefer to explore? The map below places all {scents.length}.</p>
+      </div>
+      <ScentFinder id="aroma-finder" dark />
     </div>
   </section>
 
@@ -192,6 +204,9 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
   .legend-acc span { display: inline-flex; align-items: center; gap: 0.35rem; }
   @media (max-width: 860px) { .legend-steps { grid-template-columns: 1fr; } .legend-steps li + li { padding-left: 0; border-left: 0; border-top: var(--line); padding-top: 1.5rem; margin-top: 1.5rem; } }
 
+  .a-find { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+  .a-find-intro { display: grid; gap: 1rem; }
+  @media (max-width: 960px) { .a-find { grid-template-columns: 1fr; } }
   .lib { margin-top: clamp(3rem, 6vw, 5rem); }
   .lib-tools { display: grid; grid-template-columns: minmax(16rem, 22rem) 1fr auto auto; gap: 1rem 1.5rem; align-items: center; padding-bottom: 1.5rem; border-bottom: var(--line-strong); margin-bottom: 2rem; }
   .lib-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }

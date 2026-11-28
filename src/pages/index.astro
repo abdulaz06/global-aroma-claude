@@ -1,7 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import Pattern from '../components/Pattern.astro';
-import ScentMap from '../components/ScentMap.astro';
+import ScentFinder from '../components/ScentFinder.astro';
+import ProductCard from '../components/ProductCard.astro';
 import { Image } from 'astro:assets';
 import { fieldSVG } from '../lib/flowfield';
 import { signatureSVG } from '../lib/signature';
@@ -12,6 +13,9 @@ import { scents, clientScents } from '../lib/library';
 import { shopProducts } from '../lib/catalog';
 
 import hotel from '../assets/concept/hotel-lobby.webp';
+import reed from '../assets/concept/reed-diffuser.webp';
+import oil from '../assets/concept/fragrance-oil.webp';
+import amenities from '../assets/concept/guest-amenities.webp';
 import restaurant from '../assets/concept/restaurant.webp';
 import residential from '../assets/concept/residential.webp';
 import hospital from '../assets/concept/hospital.webp';
@@ -35,96 +39,81 @@ const spaces = [
   { name: 'Information technology', img: ops, alt: 'An operations room with a wall of screens', brings: ['ICT & connectivity', 'System integration'], d: ['technology'] },
   { name: 'AI and data centres', img: dc, alt: 'Rows of server racks in a data centre', brings: ['Infrastructure & connectivity', 'Support & maintenance'], d: ['technology'] },
 ] as const;
-const online = scents.filter((s) => s.store).length;
-const moment = scentBySlug['royal-residence'];
-const momentSvg = signatureSVG(moment, { size: 640, mode: 'ink', ink: '#f2eee7', hairline: 1.4 }).replace('<svg ', '<svg class="moment-svg" ');
+const heroScent = scentBySlug['royal-residence'];
+const heroSvg = signatureSVG(heroScent, { size: 640, mode: 'ink', ink: '#f2eee7', hairline: 1.3 });
+const divPhoto = { aroma: { img: oil, alt: 'Amber fragrance oil drawn from a glass bottle with a dropper' }, hospitality: { img: amenities, alt: 'Folded towels and amber amenity bottles on a stone vanity' }, technology: { img: dc, alt: 'Rows of server racks with status lights' } } as const;
+const featured = [5390, 5516, 5258, 5243].map((id) => shopProducts.find((p) => p.id === id)).filter((p): p is NonNullable<typeof p> => !!p);
+const productCount = shopProducts.length;
 ---
-<Base title="Global Aroma — Scent, hospitality and technology for commercial spaces" description="Global DWC LLC brings scent marketing, hospitality supplies and business technology together from Dubai World Central. Explore 67 fragrances, order oils and diffusers online, or build a brief." current="home" og="home">
-  <section class="hero" data-hero>
-    <div class="hero-field" data-field set:html={fieldSVG(1600, 720)} />
+<Base title="Global Aroma — Scent, hospitality and technology for commercial spaces" description="Global DWC LLC brings scent marketing, hospitality supplies and business technology together from Dubai World Central. Shop oils and diffusers online, find a fragrance by feel, or build a brief." current="home" og="home">
+  <section class="hero dark" aria-labelledby="hero-h">
+    <div class="hero-img">
+      <Image src={reed} alt="A reed diffuser on a stone ledge in warm evening light" widths={[800, 1400, 2042]} sizes="100vw" loading="eager" fetchpriority="high" />
+    </div>
+    <div class="hero-sig" aria-hidden="true"><div class="reveal" set:html={heroSvg} /></div>
     <div class="wrap hero-in">
       <p class="label kicker reveal">Global DWC LLC · Dubai World Central</p>
-      <h1 class="mega hero-h reveal">How a space<br /> feels.</h1>
-      <div class="hero-side reveal">
-        <p class="lead">Scent marketing, hospitality supplies and business technology for hotels, malls, offices and homes. Three divisions, one team in Dubai.</p>
-        <div class="hero-cta">
-          <a class="btn" href="/brief">Start a brief</a>
-          <a class="btn btn-line" href="/shop">Shop oils &amp; diffusers</a>
-        </div>
+      <h1 class="mega reveal" id="hero-h">How a space feels.</h1>
+      <p class="lead reveal">Fragrance, hospitality supplies and business technology for hotels, malls, offices and homes. Three divisions, one team in Dubai.</p>
+      <div class="hero-cta reveal">
+        <a class="btn" href="/shop">Shop oils &amp; diffusers</a>
+        <a class="btn btn-line" href="/brief">Start a brief</a>
       </div>
     </div>
+    <p class="hero-cap wrap"><span class="label">Concept image</span> The lines are the signature of <a href={`/aroma#scent-${heroScent.slug}`}>{heroScent.title}</a>, drawn from its notes.</p>
+  </section>
+
+  <section class="section divs-sec" aria-labelledby="div-h">
     <div class="wrap">
-      <ol class="hero-index">
+      <div class="section-head">
+        <h2 class="h1 sh-t reveal" id="div-h">Three divisions, one team.</h2>
+        <p class="body-copy sh-d reveal">A hotel can scent its lobby, dress its rooms and connect its screens with a single point of contact.</p>
+      </div>
+      <ul class="dcards">
         {divisions.map((d, i) => (
-          <li>
-            <a href={d.href} style={`--c:${accent[d.id]}`}>
-              <span class="hi-line" aria-hidden="true"></span>
+          <li class="dcard reveal" style={`--c:${accent[d.id]};--ct:var(--${d.id}-text)`}>
+            <a href={d.href} class="dcard-link">
+              <span class="figure dcard-img"><Image src={divPhoto[d.id].img} alt={divPhoto[d.id].alt} widths={[480, 800]} sizes="(max-width: 860px) 100vw, 33vw" loading="lazy" /><span class="tag">Concept image</span></span>
+              <span class="dcard-line" aria-hidden="true"><Pattern behaviour={d.behaviour} w={600} h={56} lines={d.behaviour === 'weave' ? 3 : 5} seed={d.id + 'card'} accent={hex[d.id]} /></span>
               <span class="label label-muted">0{i + 1} · {d.kicker}</span>
-              <span class="hi-name serif">{d.name}</span>
-              <span class="hi-arrow" aria-hidden="true">→</span>
+              <span class="dcard-name serif">{d.name}</span>
+              <span class="dcard-stmt serif">{d.statement}</span>
+              <span class="dcard-cats">{d.categories.slice(0, 3).map((c) => c.name).join(' · ')}</span>
+              <span class="link dcard-more">Explore {d.short} <span aria-hidden="true">→</span></span>
             </a>
           </li>
         ))}
-      </ol>
+      </ul>
     </div>
   </section>
 
-  <section class="section rule" aria-labelledby="div-h">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 class="h1 sh-t reveal" id="div-h">One line, drawn three ways.</h2>
-        <p class="body-copy sh-d reveal">Each division has its own work and its own expertise. They share a standard and a single point of contact, so a hotel can scent its lobby, dress its rooms and connect its screens with one team.</p>
+  <section class="section dark finder-sec" aria-labelledby="find-h">
+    <div class="wrap finder-in">
+      <div class="finder-intro">
+        <p class="label label-muted kicker reveal">The scent collection</p>
+        <h2 class="h1 reveal" id="find-h">Find a scent for your space.</h2>
+        <p class="muted reveal">Tell us how it should feel and we’ll show the closest of the {scents.length} fragrances in the collection, matched by their notes.</p>
+        <p class="finder-links"><a class="link" href="/aroma#map">Explore the scent map</a><a class="link" href="/aroma#library">Browse all {scents.length}</a></p>
       </div>
-      <div class="divs">
-        {divisions.map((d, i) => (
-          <article class="div-card reveal" style={`--c:${accent[d.id]};--ct:var(--${d.id}-text)`}>
-            <a href={d.href} class="div-art" aria-hidden="true" tabindex="-1">
-              <Pattern behaviour={d.behaviour} w={640} h={420} seed={d.id + 'home'} accent={hex[d.id]} lines={d.behaviour === 'weave' ? 12 : 18} />
-              <span class="div-behaviour label">{d.behaviour === 'flow' ? 'Flow' : d.behaviour === 'weave' ? 'Weave' : 'Signal'}</span>
-            </a>
-            <div class="div-body">
-              <p class="label label-muted">0{i + 1} · {d.kicker}</p>
-              <h3 class="h2"><a href={d.href}>{d.name}</a></h3>
-              <p class="serif div-stmt">{d.statement}</p>
-              <p class="body-copy">{d.intro}</p>
-              <ul class="div-cats">
-                {d.categories.slice(0, 5).map((c) => <li>{c.name}{c.buy && <span class="label tag-online">Online</span>}</li>)}
-              </ul>
-              <a class="link" href={d.href}>Explore {d.short}<span aria-hidden="true">→</span></a>
-            </div>
-          </article>
-        ))}
-      </div>
+      <ScentFinder id="home-finder" libraryHref="/aroma" dark />
     </div>
   </section>
 
-  <section class="moment" aria-labelledby="moment-h">
-    <div class="moment-img">
-      <Image src={hotel} alt="A sunlit hotel lobby with a sculptural chandelier" widths={[800, 1400, 2000]} sizes="100vw" loading="lazy" />
-      <div class="moment-sig" aria-hidden="true"><div class="reveal" set:html={momentSvg} /></div>
-    </div>
-    <div class="wrap moment-copy">
-      <h2 class="h1 reveal" id="moment-h">The first thing a guest notices is the one thing they can’t see.</h2>
-      <p class="moment-cap"><span class="label">Concept image</span><span>The lines show the signature of <a href={`/aroma#scent-${moment.slug}`}>{moment.title}</a>, drawn over a lobby: where scent sits in a space, before anyone looks around.</span></p>
-    </div>
-  </section>
-
-  <section class="section dark" aria-labelledby="map-h">
+  <section class="section tint" aria-labelledby="shop-h">
     <div class="wrap">
       <div class="section-head">
         <div class="sh-t">
-          <p class="label label-muted kicker reveal">The scent collection</p>
-          <h2 class="h1 reveal" id="map-h">{scents.length} fragrances,<br />mapped by feel.</h2>
+          <p class="label label-muted kicker reveal">Shop</p>
+          <h2 class="h1 reveal" id="shop-h">Order online.</h2>
         </div>
         <div class="sh-d reveal">
-          <p class="muted">Each dot is a real fragrance from the Global Aroma collection, placed by its notes: fresh to warm, floral to woody. Tap anywhere on the map to see what sits closest to the atmosphere you have in mind.</p>
-          <p style="margin-top:1.25rem"><a class="link" href="/aroma#library">Browse the full collection <span aria-hidden="true">→</span></a></p>
+          <p class="body-copy">Diffuser oils and diffusers with prices from the official store. Choose here, then check out on globalaroma.me.</p>
+          <p class="shop-ctas"><a class="btn" href="/shop">Browse all {productCount} products</a><a class="link" href="/brief">Volumes or projects? Ask us</a></p>
         </div>
       </div>
-      <ScentMap compact id="home-map" libraryHref="/aroma" />
+      <ul class="feat">{featured.map((p) => <ProductCard p={p} detailsHref="/shop" />)}</ul>
     </div>
   </section>
-
   <section class="section" aria-labelledby="spaces-h">
     <div class="wrap">
       <div class="section-head">
@@ -151,46 +140,8 @@ const momentSvg = signatureSVG(moment, { size: 640, mode: 'ink', ink: '#f2eee7',
     </div>
   </section>
 
-  <section class="section tint" aria-labelledby="buy-h">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 class="h1 sh-t reveal" id="buy-h">Order online, or ask us.</h2>
-        <p class="body-copy sh-d reveal">There are two ways to work with Global Aroma. Every product on this site shows which one applies.</p>
-      </div>
-      <div class="paths">
-        <div class="path reveal">
-          <p class="label label-muted">Order online</p>
-          <h3 class="h2">Oils &amp; diffusers</h3>
-          <p class="body-copy">{online} fragrances from the collection, plus more oils, and {shopProducts.filter((p) => p.category === 'diffusers' && p.purchasable).length} priced diffusers. Browse them here, then pay and check out on the Global Aroma store.</p>
-          <p class="path-how"><span class="act act-buy" aria-hidden="true">Buy online</span> marks anything sold in the store.</p>
-          <a class="btn" href="/shop">Browse the shop</a>
-        </div>
-        <div class="path reveal">
-          <p class="label label-muted">Request a quote</p>
-          <h3 class="h2">Projects &amp; volumes</h3>
-          <p class="body-copy">Signature scents, commercial volumes, hospitality supplies and technology projects. Add what interests you to a brief and send it to the team by email or WhatsApp.</p>
-          <p class="path-how"><span class="act act-add" aria-hidden="true">Add to brief</span> collects anything into your enquiry.</p>
-          <a class="btn btn-line" href="/brief">Start a brief</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="how-h">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 class="h1 sh-t reveal" id="how-h">How an enquiry works.</h2>
-      </div>
-      <ol class="steps">
-        <li class="reveal"><span class="num step-n">01</span><h3 class="h3">Tell us about the space</h3><p class="muted">What it is, roughly how large, and what you need: scent, supplies, technology or all three.</p></li>
-        <li class="reveal"><span class="num step-n">02</span><h3 class="h3">Shortlist</h3><p class="muted">Pick fragrances from the map and add products or categories. Your brief keeps them together.</p></li>
-        <li class="reveal"><span class="num step-n">03</span><h3 class="h3">Sample</h3><p class="muted">For scent, the Global Aroma scent box holds 21 fragrances in 5 ml bottles, so you can try them in the space itself.</p></li>
-        <li class="reveal"><span class="num step-n">04</span><h3 class="h3">Proposal</h3><p class="muted">The Dubai team replies with the right products, quantities and next steps.</p></li>
-      </ol>
-    </div>
-  </section>
-
   <section class="cta dark">
+    <div class="cta-field" aria-hidden="true" set:html={fieldSVG(1600, 500, 22)} />
     <div class="wrap cta-in">
       <h2 class="mega cta-h">Let’s talk<br />about your space.</h2>
       <div class="cta-side">
@@ -205,86 +156,69 @@ const momentSvg = signatureSVG(moment, { size: 640, mode: 'ink', ink: '#f2eee7',
 </Base>
 
 <script>
-  import { startField } from '../scripts/field';
   import '../scripts/scents-ui';
-  const host = document.querySelector<HTMLElement>('[data-field]');
-  if (host) startField(host, document.querySelector<HTMLElement>('[data-hero]')!);
 </script>
 
 <style>
-  .hero { position: relative; min-height: min(100svh, 62rem); display: grid; grid-template-rows: 1fr auto; overflow: hidden; padding-top: clamp(2rem, 6vh, 4.5rem); }
-  .hero-field { position: absolute; left: 0; right: 0; bottom: 6rem; top: 34%; pointer-events: none; }
-  .hero-field :global(svg) { width: 100%; height: 100%; }
-  .hero-field.live :global(svg) { display: none; }
-  .hero-field :global(.field-canvas) { position: absolute; inset: 0; }
-  .hero-in { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 2rem; align-content: start; row-gap: 1.75rem; }
-  .hero-in .kicker { grid-column: 1 / -1; }
-  .hero-h { grid-column: 1 / span 8; }
-  .hero-side { grid-column: 9 / -1; align-self: end; display: grid; gap: 1.5rem; padding-bottom: 0.6rem; }
-  .hero-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-  .hero-index { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); border-top: var(--line-strong); background: color-mix(in srgb, var(--paper) 82%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-  .hero-index li + li { border-left: var(--line); }
-  .hero-index a { display: grid; grid-template-columns: 1fr auto; gap: 0.35rem 1rem; padding: 1.15rem 1.25rem 1.4rem; text-decoration: none; position: relative; min-height: 6rem; }
-  .hero-index li:first-child a { padding-left: 0; }
-  .hi-line { position: absolute; left: 0; right: 0; top: -1px; height: 3px; background: var(--c); transform: scaleX(0.18); transform-origin: left; transition: transform 0.6s var(--ease); }
-  .hero-index li:first-child .hi-line { left: 0; }
-  .hero-index a:hover .hi-line, .hero-index a:focus-visible .hi-line { transform: scaleX(1); }
-  .hi-name { font-size: clamp(1.35rem, 2vw, 1.85rem); letter-spacing: -0.015em; line-height: 1.1; grid-column: 1; }
-  .hi-arrow { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-size: 1.3rem; transition: transform 0.3s var(--ease); }
-  .hero-index a:hover .hi-arrow { transform: translateX(4px); }
-  @media (max-width: 960px) {
-    .hero { min-height: auto; }
-    .hero-h { grid-column: 1 / -1; }
-    .hero-side { grid-column: 1 / -1; }
-    .hero-field { position: relative; top: auto; bottom: auto; height: 15rem; margin-top: 1rem; order: 2; }
-    .hero { display: flex; flex-direction: column; }
-    .hero > .wrap:last-child { order: 3; }
-    .hero-index { grid-template-columns: 1fr; }
-    .hero-index li + li { border-left: 0; border-top: var(--line); }
-    .hero-index a { padding-left: 0; min-height: 0; }
-  }
-
-  .divs { display: grid; gap: clamp(3rem, 6vw, 5rem); }
-  .div-card { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1rem, 2vw, 2rem); row-gap: 1.5rem; align-items: center; }
-  .div-art { grid-column: 1 / span 6; aspect-ratio: 16 / 10.5; border: var(--line); position: relative; overflow: hidden; display: block; }
-  .div-card:nth-child(even) .div-art { grid-column: 7 / -1; grid-row: 1; }
-  .div-card:nth-child(even) .div-body { grid-column: 1 / span 5; grid-row: 1; }
-  .div-art :global(.pattern) { position: absolute; inset: 0; transition: transform 1.6s var(--ease); }
-  .div-art:hover :global(.pattern) { transform: scale(1.04); }
-  .div-behaviour { position: absolute; left: 1rem; top: 1rem; background: var(--paper); padding: 0.25rem 0.5rem; border-left: 3px solid var(--c); }
-  .div-body { grid-column: 8 / -1; display: grid; gap: 1rem; justify-items: start; }
-  .div-body h3 a { text-decoration: none; }
-  .div-body h3 a:hover { text-decoration: underline; text-decoration-thickness: 1px; }
-  .div-stmt { font-size: 1.35rem; color: var(--ct, var(--c)); line-height: 1.25; }
-  .div-cats { width: 100%; border-top: var(--line); margin-block: 0.25rem 0.5rem; }
-  .div-cats li { display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0; border-bottom: var(--line); font-size: 0.95rem; }
-  .tag-online { color: var(--aroma-text); }
-  @media (max-width: 860px) {
-    .div-art, .div-card:nth-child(even) .div-art, .div-body, .div-card:nth-child(even) .div-body { grid-column: 1 / -1; grid-row: auto; }
-  }
-
-  .moment { position: relative; background: var(--ink); color: var(--paper); }
-  .moment-img { position: relative; height: min(92svh, 58rem); overflow: hidden; }
-  .moment-img :global(img) { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.85) brightness(0.74); }
-  .moment-img::after { content: ''; position: absolute; inset: 40% 0 0; background: linear-gradient(transparent, rgba(26,23,20,0.72)); pointer-events: none; }
-  .moment-sig { position: absolute; left: 62%; top: 42%; width: min(60vh, 36rem); transform: translate(-50%, -50%); opacity: 0.92; z-index: 1; }
-  .moment-sig :global(svg) { width: 100%; height: auto; }
+  .hero { position: relative; min-height: min(100svh, 56rem); display: grid; align-content: end; overflow: hidden; padding-block: 6rem 2rem; }
+  .hero-img { position: absolute; inset: 0; }
+  .hero-img :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 72% 50%; }
+  .hero-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20,16,12,0.86) 0%, rgba(20,16,12,0.62) 38%, rgba(20,16,12,0.08) 70%), linear-gradient(0deg, rgba(20,16,12,0.55), transparent 40%); }
+  .hero-sig { position: absolute; right: 6%; top: 8%; width: min(46vw, 40rem); opacity: 0.9; pointer-events: none; }
+  .hero-sig :global(svg) { width: 100%; height: auto; }
   @media (prefers-reduced-motion: no-preference) {
-    .moment-sig :global(path) { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 2.8s var(--ease); }
-    .moment-sig :global(.in path) { stroke-dashoffset: 0; }
-    .moment-sig :global(path:nth-child(3n)) { transition-delay: 0.25s; } .moment-sig :global(path:nth-child(3n+1)) { transition-delay: 0.5s; }
+    .hero-sig :global(path) { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 3.2s var(--ease); }
+    .hero-sig :global(.in path) { stroke-dashoffset: 0; }
+    .hero-sig :global(path:nth-child(2n)) { transition-delay: 0.3s; } .hero-sig :global(path:nth-child(3n)) { transition-delay: 0.6s; }
   }
-  .moment-copy { position: absolute; z-index: 2; left: 0; right: 0; bottom: clamp(2rem, 5vw, 4rem); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 22rem); gap: 2rem; align-items: end; }
-  .moment-copy h2 { max-width: 16ch; text-shadow: 0 2px 30px rgba(0,0,0,0.25); }
-  .moment-cap { font-size: 0.88rem; color: var(--p-72); display: grid; gap: 0.5rem; align-content: end; }
-  .moment-cap .label { color: var(--paper); }
-  .moment-cap a { color: var(--paper); }
-  @media (max-width: 760px) {
-    .moment-img { height: 26rem; }
-    .moment-img::after { display: none; }
-    .moment-sig { left: 50%; top: 50%; width: 72vw; }
-    .moment-copy { position: static; grid-template-columns: 1fr; padding-block: 2rem 3rem; }
+  .hero-in { position: relative; display: grid; gap: 1.5rem; justify-items: start; max-width: var(--maxw); }
+  .hero-in h1 { max-width: 9ch; text-shadow: 0 2px 40px rgba(0,0,0,0.25); }
+  .hero-in .lead { max-width: 34ch; color: #e8e1d6; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .hero-cap { position: relative; margin-top: clamp(2rem, 6vh, 4rem); font-size: 0.8rem; color: var(--p-72); text-align: right; }
+  .hero-cap .label { margin-right: 0.6rem; }
+  .hero-cap a { color: var(--paper); }
+  @media (max-width: 860px) {
+    .hero { min-height: 0; padding: 0; display: block; }
+    .hero-img { position: relative; height: 52svh; min-height: 20rem; }
+    .hero-img :global(img) { object-position: 78% 50%; }
+    .hero-img::after { background: linear-gradient(0deg, var(--ink) 0%, rgba(26,23,20,0.2) 45%, transparent 70%); }
+    .hero-sig { right: -6%; top: 2%; width: 78vw; }
+    .hero-in { margin-top: -4.5rem; padding-bottom: 1.5rem; gap: 1.1rem; }
+    .hero-in h1 { max-width: none; }
+    .hero-cap { text-align: left; margin-top: 0; padding-bottom: 1.5rem; }
   }
+
+  .dcards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2vw, 2rem); }
+  .dcard-link { display: grid; gap: 0.55rem; text-decoration: none; align-content: start; }
+  .dcard-img { aspect-ratio: 4 / 3; }
+  .dcard-img :global(img) { transition: transform 1.2s var(--ease); }
+  .dcard-link:hover .dcard-img :global(img) { transform: scale(1.04); }
+  .dcard-line { display: block; height: 56px; border-bottom: 3px solid var(--c); overflow: hidden; margin-bottom: 0.4rem; }
+  .dcard-line :global(.pattern) { height: 100%; }
+  .dcard-name { font-size: clamp(1.6rem, 2.4vw, 2.1rem); letter-spacing: -0.02em; line-height: 1.05; }
+  .dcard-stmt { color: var(--ct); font-size: 1.15rem; line-height: 1.25; }
+  .dcard-cats { font-size: 0.88rem; color: var(--ink-72); }
+  .dcard-more { justify-self: start; margin-top: 0.3rem; }
+  @media (max-width: 860px) {
+    .dcards { grid-template-columns: 1fr; gap: 0; border-top: var(--line); }
+    .dcard-link { grid-template-columns: 7rem 1fr; column-gap: 1rem; row-gap: 0.25rem; padding-block: 1.1rem; border-bottom: 3px solid var(--c); }
+    .dcard-img { grid-row: 1 / span 5; aspect-ratio: 1; align-self: start; }
+    .dcard-img .tag { font-size: 0.55rem; padding: 0.15rem 0.3rem; left: 0.3rem; bottom: 0.3rem; }
+    .dcard-line { display: none; }
+    .dcard-name { font-size: 1.5rem; }
+    .dcard-stmt { font-size: 1rem; }
+    .dcard-cats { font-size: 0.8rem; }
+  }
+
+  .finder-in { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+  .finder-intro { display: grid; gap: 1.1rem; position: sticky; top: calc(var(--nav-h) + 2rem); }
+  .finder-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; }
+  @media (max-width: 960px) { .finder-in { grid-template-columns: 1fr; } .finder-intro { position: static; } }
+
+  .shop-ctas { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: center; margin-top: 1.25rem; }
+  .feat { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: var(--line); border-left: var(--line); }
+  @media (max-width: 960px) { .feat { grid-template-columns: 1fr 1fr; } }
 
   .rail { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; padding-inline: max(var(--gutter), calc((100vw - var(--maxw)) / 2 + var(--gutter))); scroll-padding-inline: max(var(--gutter), calc((100vw - var(--maxw)) / 2 + var(--gutter))); }
   .rail:focus-visible { outline-offset: -3px; }
@@ -296,23 +230,14 @@ const momentSvg = signatureSVG(moment, { size: 640, mode: 'ink', ink: '#f2eee7',
   .space-d { display: flex; gap: 0.35rem; }
   @media (max-width: 640px) { .rail-in { grid-auto-columns: 78vw; } }
 
-  .paths { display: grid; grid-template-columns: 1fr 1fr; border-top: var(--line-strong); }
-  .path { display: grid; gap: 1.1rem; align-content: start; justify-items: start; padding: 2rem 2.5rem 0.5rem 0; }
-  .path + .path { border-left: var(--line); padding-left: 2.5rem; }
-  .path-how { font-size: 0.9rem; color: var(--ink-72); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-  .path-how .act { pointer-events: none; color: var(--ink); }
-  @media (max-width: 760px) { .paths { grid-template-columns: 1fr; } .path + .path { border-left: 0; border-top: var(--line); padding-left: 0; margin-top: 2rem; } .path { padding-right: 0; } }
-
-  .steps { display: grid; grid-template-columns: repeat(4, 1fr); border-top: var(--line-strong); }
-  .steps li { padding: 1.5rem 1.5rem 0 0; display: grid; gap: 0.75rem; align-content: start; }
-  .steps li + li { padding-left: 1.5rem; border-left: var(--line); }
-  .step-n { font-size: 0.8rem; color: var(--ink-56); }
-  @media (max-width: 900px) { .steps { grid-template-columns: 1fr 1fr; row-gap: 2rem; } .steps li:nth-child(3) { padding-left: 0; border-left: 0; } }
-  @media (max-width: 560px) { .steps { grid-template-columns: 1fr; } .steps li + li { padding-left: 0; border-left: 0; border-top: var(--line); padding-top: 1.5rem; } }
-
   .cta { padding-block: clamp(5rem, 11vw, 10rem); }
   .cta-in { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 2.5rem; }
   .cta-side { display: grid; gap: 0.75rem; justify-items: start; }
   .cta-side .btn { width: 100%; }
   @media (max-width: 860px) { .cta-in { grid-template-columns: 1fr; } }
+  .cta { position: relative; overflow: hidden; }
+  .cta-field { position: absolute; inset: 40% 0 0; opacity: 0.35; pointer-events: none; }
+  .cta-field :global(svg) { width: 100%; height: 100%; }
+  .cta-field :global(path[stroke="#1a1714"]) { stroke: #f2eee7; }
+  .cta-in { position: relative; }
 </style>

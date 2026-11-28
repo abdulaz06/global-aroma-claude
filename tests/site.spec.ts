@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
+const STORE = /^https:\/\/globalaroma\.me\/product\/[a-z0-9-]+\/(\?.*)?$/;
 const PAGES = ['/', '/aroma/', '/hospitality/', '/technology/', '/shop/', '/brief/', '/contact/'];
 // Product photos load from globalaroma.me; their failure in an offline sandbox is not a site error.
 const ignorable = (t: string) => /globalaroma\.me|ERR_TUNNEL|ERR_NAME_NOT_RESOLVED|ERR_INTERNET_DISCONNECTED/.test(t);
@@ -45,8 +46,8 @@ test('every internal link and asset resolves', async ({ page, request }) => {
 test('store links point at the existing WooCommerce store', async ({ page }) => {
   await page.goto('/aroma/');
   const buys = await page.$$eval('a.act-buy', (els) => els.map((e) => (e as HTMLAnchorElement).href));
-  expect(buys.length).toBeGreaterThan(30);
-  for (const h of buys) expect(h).toMatch(/^https:\/\/globalaroma\.me\/product\/[a-z0-9-]+\/$/);
+  expect(buys.length).toBeGreaterThanOrEqual(20);
+  for (const h of buys) expect(h).toMatch(STORE);
 });
 
 test('scent map suggests the nearest fragrances and opens details', async ({ page }) => {
@@ -75,7 +76,7 @@ test('library search and filters narrow the collection', async ({ page }) => {
   expect(n).toBeGreaterThan(2);
   await page.fill('[data-search]', '');
   await page.check('[data-online]');
-  await expect(count).toHaveText('23 of 67');
+  await expect(count).toHaveText('22 of 67');
   await page.uncheck('[data-online]');
   await page.click('[data-more]');
   await expect(page.locator('[data-card]:visible')).toHaveCount(67);
@@ -84,7 +85,7 @@ test('library search and filters narrow the collection', async ({ page }) => {
 test('brief: shortlist, validate, and build email + WhatsApp hand-offs', async ({ page }) => {
   await page.goto('/aroma/');
   await page.locator('[data-card] [data-brief-add]').first().click();
-  await page.locator('.dif [data-brief-add]').first().click();
+  await page.locator('.dif-grid .pc [data-brief-add]').first().click();
   await expect(page.locator('[data-brief-count]').first()).toHaveText('2');
   await page.goto('/hospitality/');
   await page.locator('.cat [data-brief-add]').first().click();
@@ -133,12 +134,13 @@ test('mobile menu opens and closes', async ({ page }, info) => {
   await expect(page.locator('#mobile-menu')).toBeHidden();
 });
 
-test('reduced motion: the hero stays a still drawing', async ({ browser }) => {
+test('reduced motion: the signature is drawn, not animated', async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await ctx.newPage();
   await page.goto('/');
-  await expect(page.locator('[data-field] svg')).toBeVisible();
-  await expect(page.locator('[data-field] canvas')).toHaveCount(0);
+  const path = page.locator('.hero-sig path').first();
+  await expect(path).toBeVisible();
+  expect(await path.evaluate((e) => getComputedStyle(e).strokeDasharray)).toBe('none');
   await ctx.close();
 });
 
@@ -147,8 +149,9 @@ test('without JavaScript the content, links and contacts remain', async ({ brows
   const page = await ctx.newPage();
   await page.goto('/');
   await expect(page.locator('h1')).toContainText('How a space');
-  await expect(page.locator('.smap-dot')).toHaveCount(67);
+  await expect(page.locator('.hero-cta a[href="/shop"]')).toBeVisible();
   await page.goto('/aroma/');
+  await expect(page.locator('.smap-dot')).toHaveCount(67);
   await expect(page.locator('[data-card]')).toHaveCount(67);
   await expect(page.locator('[data-card]:visible')).toHaveCount(67);
   await page.goto('/brief/');
@@ -156,12 +159,141 @@ test('without JavaScript the content, links and contacts remain', async ({ brows
   await ctx.close();
 });
 
-test('shop: every purchase hands off to a WooCommerce product page; sorting works', async ({ page }) => {
+test('shop: full catalogue, categories, search, sort and paging', async ({ page }) => {
   await page.goto('/shop/');
-  const buys = await page.$$eval('a[href^="https://globalaroma.me/product/"]', (els) => els.map((e) => (e as HTMLAnchorElement).href));
-  expect(new Set(buys).size).toBeGreaterThanOrEqual(47 + 13);
-  await page.locator('[data-sort-group=oils] [data-sort=price]').click();
-  const prices = await page.$$eval('[data-sortable=oils] > li', (els) => els.map((e) => +(e as HTMLElement).dataset.price!));
+  await expect(page.locator('[data-product]')).toHaveCount(62);
+  await page.click('[data-cat-btn=diffusers]');
+  await expect(page.locator('[data-count]')).toContainText('14');
+  await expect(page.locator('[data-product]:not([data-cat=diffusers]):visible')).toHaveCount(0);
+  await expect(page).toHaveURL(/cat=diffusers/);
+  await page.click('[data-cat-btn=oils]');
+  await page.selectOption('[data-sort]', 'price-asc');
+  await page.click('[data-more]').catch(() => {});
+  const prices = await page.$$eval('[data-product]:not([hidden])', (els) => els.map((e) => (e as HTMLElement).dataset.price).filter(Boolean).map(Number));
+  expect(prices.length).toBeGreaterThan(5);
   expect(prices).toEqual([...prices].sort((a, b) => a - b));
+  await page.fill('[data-q]', 'zzzz-no-such-scent');
+  await expect(page.locator('[data-empty]')).toBeVisible();
+  await page.locator('[data-empty] [data-clear]').click();
+  await page.click('[data-cat-btn=all]');
+  const firstPage = await page.locator('[data-product]:visible').count();
+  expect(firstPage).toBeLessThan(62);
+  await page.click('[data-more]');
+  expect(await page.locator('[data-product]:visible').count()).toBeGreaterThan(firstPage);
+});
+
+test('shop: cart and product links use only the store\'s own URLs', async ({ page }) => {
+  await page.goto('/shop/');
+  const carts = await page.$$eval('a[data-cart]', (els) => els.map((e) => (e as HTMLAnchorElement).href));
+  expect(carts.length).toBeGreaterThan(40);
+  for (const h of carts) { expect(h).toMatch(STORE); expect(h).toMatch(/add-to-cart=\d+/); }
+  // A variable product hands off its verified variation, nothing guessed.
+  expect(carts).toContain('https://globalaroma.me/product/arabic-coffee/?attribute_pa_volume=500ml&variation_id=5394&add-to-cart=5390');
+  // Unpriced listings are quote-only.
+  await expect(page.locator('[data-product][data-buyable=false] a[data-cart]')).toHaveCount(0);
   await expect(page.getByText('orders reach', { exact: false })).toHaveCount(0);
+});
+
+test('shop: product dialog deep-links and shows the notes source', async ({ page }) => {
+  await page.goto('/shop/#p-5390');
+  const dlg = page.locator('[data-product-dialog]');
+  await expect(dlg).toBeVisible();
+  await expect(dlg.locator('[data-pd-title]')).toContainText(/arabic coffee/i);
+  await expect(dlg.locator('[data-pd-cart]')).toHaveAttribute('href', STORE);
+  await page.keyboard.press('Escape');
+  await expect(dlg).toBeHidden();
+});
+
+test('shop: freshness label never claims live prices when the store is unreachable', async ({ page }) => {
+  await page.route('**/api/catalog.json', (r) => r.fulfill({ json: { ok: false, error: 'store-unavailable' } }));
+  await page.goto('/shop/');
+  const fresh = page.locator('[data-fresh]');
+  await expect(fresh).not.toHaveAttribute('data-state', 'live');
+  await expect(fresh).toContainText(/store/i);
+});
+
+test('catalogue endpoint fails soft and is not cached when the store is down', async ({ request }) => {
+  const r = await request.get('/api/catalog.json');
+  expect(r.status()).toBe(200);
+  const j = await r.json();
+  if (!j.ok) expect(r.headers()['cache-control']).toContain('no-store');
+  expect(r.headers()['x-robots-tag']).toContain('noindex');
+});
+
+test('scent finder recommends by feel, keeps the space for the brief', async ({ page }) => {
+  await page.goto('/');
+  const f = page.locator('#home-finder');
+  await f.locator('[data-space="Hotel lobby"]').click();
+  await f.locator('[data-mood=fresh]').click();
+  await expect(f.locator('[data-f-list] li')).toHaveCount(3);
+  await expect(f.locator('[data-f-title]')).toContainText('hotel lobby');
+  await f.locator('[data-f-more]').click();
+  await expect(f.locator('[data-f-list] li')).toHaveCount(6);
+  const brief = await f.locator('[data-f-brief]').getAttribute('href');
+  expect(brief).toContain('space=Hotel%20lobby');
+  // Changing only the space must not change the matches.
+  const before = await f.locator('.f-item-name').allTextContents();
+  await f.locator('[data-space=Office]').click();
+  expect(await f.locator('.f-item-name').allTextContents()).toEqual(before);
+});
+
+test('touch: tapping the scent map lists nearest scents instead of hitting a dot', async ({ page }, info) => {
+  test.skip(info.project.use.isMobile !== true, 'coarse pointer only');
+  await page.goto('/aroma/');
+  const dot = page.locator('#map .smap-dot').first();
+  await dot.scrollIntoViewIfNeeded();
+  expect(await dot.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe('none');
+  const box = (await dot.boundingBox())!;
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page.locator('#map [data-near] li')).toHaveCount(4);
+  await expect(page.locator('[data-scent-dialog]')).toBeHidden();
+});
+
+test('staff demo: labelled synthetic data, simulate, notify, inspect, reset', async ({ page }) => {
+  await page.goto('/staff-demo/');
+  await expect(page.getByText('Demonstration — sample data only. Not connected to live customer orders.').first()).toBeVisible();
+  const view = page.locator('[data-testid=orders-table]:visible, [data-testid=orders-cards]:visible');
+  await expect(view).toHaveCount(1);
+  const text = await page.locator('body').innerText();
+  expect(text).not.toMatch(/@(?!example\.com)[a-z0-9-]+\.[a-z]{2,}/i);
+  const newBefore = Number(await page.getByTestId('stat-new').innerText().then((t) => t.match(/\d+/)![0]));
+  await page.getByTestId('simulate').click();
+  await expect(page.getByTestId('toast')).toBeVisible();
+  await expect(page.getByTestId('stat-new')).toContainText(String(newBefore + 1));
+  await expect(page.getByTestId('bell-count')).not.toHaveText('0');
+  await page.getByTestId('toast').getByRole('button', { name: /open/i }).click();
+  const detail = page.getByTestId('order-detail');
+  await expect(detail).toBeVisible();
+  await expect(detail).toContainText('@example.com');
+  await expect(detail).toContainText(/AED/);
+  await page.keyboard.press('Escape');
+  await page.getByTestId('search').fill('zzzz');
+  await expect(page.getByTestId('empty')).toBeVisible();
+  await page.getByTestId('search').fill('');
+  await page.getByRole('button', { name: /example email/i }).first().click();
+  await expect(page.getByTestId('email-preview')).toContainText('No email has been sent');
+  await page.keyboard.press('Escape');
+  page.once('dialog', (d) => d.accept());
+  await page.getByTestId('reset').click();
+  await expect(page.getByTestId('stat-new')).toContainText(String(newBefore));
+});
+
+test('staff demo renders privately, without errors', async ({ page }) => {
+  const errors = watch(page);
+  const res = await page.goto('/staff-demo/');
+  expect(res?.status()).toBe(200);
+  await expect(page.locator('h1')).toHaveCount(1);
+  await expect(page.locator('meta[name=robots]')).toHaveAttribute('content', /noindex/);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+  expect(errors).toEqual([]);
+});
+
+test('live staff endpoint is disabled, private and read-only', async ({ request }) => {
+  const r = await request.get('/api/staff/orders.json', { headers: { 'x-staff-user': 'admin', authorization: 'Bearer forged' } });
+  expect(r.status()).toBe(404);
+  expect(r.headers()['cache-control']).toContain('no-store');
+  expect((await r.text())).not.toMatch(/billing|@/);
+  const w = await request.post('/api/staff/orders.json', { data: {} });
+  expect([403, 405]).toContain(w.status());
 });

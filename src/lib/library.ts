@@ -103,6 +103,7 @@ export function clientScents() {
   return scents.map((s) => ({
     slug: s.slug, title: s.title, family: s.family, top: s.top, heart: s.heart, base: s.base, mood: s.mood,
     dominant: s.dominant, x: +s.x.toFixed(4), y: +s.y.toFixed(4), store: s.store ?? null,
+    acc: Object.fromEntries(Object.entries(s.accords).filter(([, v]) => v > 0).map(([k, v]) => [k, +v.toFixed(3)])),
   }));
 }
 export type ClientScent = ReturnType<typeof clientScents>[number];

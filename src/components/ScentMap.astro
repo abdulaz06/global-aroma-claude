@@ -32,7 +32,7 @@ const used = ACCORDS.filter((a) => scents.some((s) => s.dominant[0] === a));
       </ul>
       <div class="smap-probe" data-probe hidden aria-hidden="true"></div>
     </div>
-    <div class="smap-axis smap-x"><span aria-hidden="true">← Fresh</span><span class="smap-hint" data-hint>Tap anywhere on the map to find scents near that feeling</span><span aria-hidden="true">Warm →</span></div>
+    <div class="smap-axis smap-x"><span aria-hidden="true">← Fresh</span><span class="smap-hint" data-hint>Tap anywhere on the map to list the nearest scents</span><span aria-hidden="true">Warm →</span></div>
   </div>
   <div class="smap-panel" data-panel aria-live="polite">
     <p class="label label-muted">Nearest to your point</p>
@@ -77,6 +77,9 @@ const used = ACCORDS.filter((a) => scents.some((s) => s.dominant[0] === a));
   .smap-dot:hover .smap-name, .smap-dot:focus-visible .smap-name, .smap-dot.near .smap-name { display: block; }
   .smap-dot:focus-visible { outline-offset: 0; }
   .smap-dots li.dim { opacity: 0.16; }
+  /* Touch: dots are visual only; taps anywhere give the nearest-four list. */
+  :global(.coarse) .smap-dot { pointer-events: none; }
+  :global(.coarse) .smap-hint { display: inline !important; }
   .smap-probe { position: absolute; width: 4.5rem; height: 4.5rem; margin: -2.25rem 0 0 -2.25rem; border: 1px solid currentColor; border-radius: 50%; pointer-events: none; }
   .smap-probe::before, .smap-probe::after { content: ''; position: absolute; border: 1px solid currentColor; border-radius: 50%; opacity: 0.5; }
   .smap-probe::before { inset: -1rem; } .smap-probe::after { inset: -2.2rem; opacity: 0.25; }

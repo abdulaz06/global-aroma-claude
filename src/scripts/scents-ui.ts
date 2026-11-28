@@ -168,3 +168,75 @@ if (libEl) {
   online?.addEventListener('change', apply);
   apply();
 }
+
+
+/* ── scent finder ───────────────────────────────── */
+type Acc = Record<string, number>;
+const MOODS: Record<string, { title: string; score: (a: Acc) => number }> = {
+  fresh: { title: 'Fresh & clean', score: (a) => (a.citrus ?? 0) + (a.green ?? 0) + (a.marine ?? 0) * 1.1 - (a.amber ?? 0) * 0.5 - (a.gourmand ?? 0) * 0.5 },
+  floral: { title: 'Light & floral', score: (a) => (a.floral ?? 0) + (a.fruity ?? 0) * 0.7 - (a.amber ?? 0) * 0.4 - (a.woody ?? 0) * 0.2 },
+  warm: { title: 'Warm & welcoming', score: (a) => (a.gourmand ?? 0) + (a.amber ?? 0) * 0.7 + (a.spicy ?? 0) * 0.4 - (a.citrus ?? 0) * 0.3 },
+  woody: { title: 'Woody & refined', score: (a) => (a.woody ?? 0) + (a.green ?? 0) * 0.15 - (a.gourmand ?? 0) * 0.3 - (a.fruity ?? 0) * 0.3 },
+  soft: { title: 'Soft & calm', score: (a) => (a.musk ?? 0) * 1.3 + (a.floral ?? 0) * 0.35 - (a.spicy ?? 0) * 0.5 - (a.amber ?? 0) * 0.3 },
+  rich: { title: 'Rich & oriental', score: (a) => (a.amber ?? 0) + (a.woody ?? 0) * 0.5 + (a.spicy ?? 0) * 0.5 - (a.citrus ?? 0) * 0.4 - (a.marine ?? 0) * 0.5 },
+};
+const ACC_NAME: Record<string, string> = { citrus: 'citrus', green: 'green', marine: 'marine', fruity: 'fruity', floral: 'floral', musk: 'musk', spicy: 'spicy', woody: 'woody', amber: 'amber and resin', gourmand: 'gourmand' };
+
+document.querySelectorAll<HTMLElement>('[data-finder]').forEach((f) => {
+  const lib = f.dataset.libraryHref || '';
+  let space = ''; let mood = ''; let shown = 3;
+  const list = f.querySelector<HTMLOListElement>('[data-f-list]')!;
+  const results = f.querySelector<HTMLElement>('[data-f-results]')!;
+  const emptyEl = f.querySelector<HTMLElement>('[data-f-empty]')!;
+  const title = f.querySelector<HTMLElement>('[data-f-title]')!;
+  const more = f.querySelector<HTMLButtonElement>('[data-f-more]')!;
+  const briefLink = f.querySelector<HTMLAnchorElement>('[data-f-brief]')!;
+  function render() {
+    if (!mood) { results.hidden = true; emptyEl.hidden = false; return; }
+    const m = MOODS[mood];
+    const ranked = scents.map((s) => ({ s, v: m.score((s as any).acc ?? {}) })).sort((a, b) => b.v - a.v);
+    results.hidden = false; emptyEl.hidden = true;
+    title.textContent = `${m.title}${space ? ` · for a ${space.toLowerCase()}` : ''}`;
+    list.innerHTML = '';
+    for (const { s } of ranked.slice(0, shown)) {
+      const acc = Object.entries((s as any).acc as Acc).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => ACC_NAME[k]).join(' and ');
+      const li = document.createElement('li');
+      li.className = 'f-item';
+      li.innerHTML = `<img src="/sig/${s.slug}.svg" alt="" width="72" height="72" loading="lazy"><div><a class="f-item-name" href="${lib}#scent-${s.slug}"></a><p class="f-item-why"></p><div class="f-item-acts"></div></div>`;
+      const a = li.querySelector('a')!; a.textContent = s.title;
+      if (dlg) a.dataset.openScent = s.slug;
+      li.querySelector('.f-item-why')!.textContent = `Mostly ${acc} notes: ${[...s.top, ...s.heart].slice(0, 3).join(', ')}.`;
+      const acts = li.querySelector('.f-item-acts')!;
+      const add = document.createElement('button');
+      add.type = 'button'; add.className = 'act act-add';
+      Object.assign(add.dataset, { briefAdd: '', kind: 'scent', id: s.slug, label: s.title, meta: s.family, division: 'aroma', addText: 'Add to brief' });
+      add.innerHTML = '<span data-add-label>Add to brief</span>';
+      acts.appendChild(add);
+      if (s.store) {
+        const buy = document.createElement('a');
+        buy.className = 'act act-buy'; buy.href = s.store.url; buy.rel = 'noopener';
+        buy.textContent = `Buy · AED ${s.store.price.toLocaleString('en-US', { minimumFractionDigits: s.store.price % 1 ? 2 : 0 })}`;
+        acts.appendChild(buy);
+      }
+      list.appendChild(li);
+    }
+    more.hidden = shown >= ranked.length;
+    briefLink.href = `/brief?need=aroma${space ? `&space=${encodeURIComponent(space)}` : ''}`;
+    window.dispatchEvent(new CustomEvent('brief:change'));
+  }
+  f.querySelectorAll<HTMLButtonElement>('[data-space]').forEach((b) => b.addEventListener('click', () => {
+    space = space === b.dataset.space ? '' : b.dataset.space!;
+    f.querySelectorAll('[data-space]').forEach((x) => x.setAttribute('aria-pressed', String((x as HTMLElement).dataset.space === space)));
+    render();
+  }));
+  f.querySelectorAll<HTMLButtonElement>('[data-mood]').forEach((b) => b.addEventListener('click', () => {
+    mood = b.dataset.mood!; shown = 3;
+    f.querySelectorAll('[data-mood]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    render();
+  }));
+  more.addEventListener('click', () => { shown += 3; render(); });
+});
+
+/* On touch screens a tap on the map always shows the nearest scents as a
+   list of large targets, never a tiny dot directly (avoids mis-taps). */
+if (matchMedia('(pointer: coarse)').matches) document.documentElement.classList.add('coarse');

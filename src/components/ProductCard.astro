@@ -11,7 +11,7 @@ import AddButton from './AddButton.astro';
 interface Props { p: ShopProduct; eager?: boolean; detailsHref?: string }
 const { p, eager = false, detailsHref } = Astro.props;
 const Media = detailsHref ? 'a' : 'button';
-const mediaProps = detailsHref ? { href: `${detailsHref}#p-${p.id}`, tabindex: -1 } : { type: 'button', 'data-open-product': p.id };
+const mediaProps: Record<string, string | number> = detailsHref ? { href: `${detailsHref}#p-${p.id}`, tabindex: -1 } : { type: 'button', 'data-open-product': p.id };
 const text = [p.title, p.name, p.sku, p.summary, p.scent?.family, ...(p.scent ? [...p.scent.top, ...p.scent.heart, ...p.scent.base] : [])].filter(Boolean).join(' ').toLowerCase();
 ---
 <li class="pc" id={`p-${p.id}`} data-product data-id={p.id} data-cat={p.category} data-price={p.price ?? ''} data-name={p.title} data-text={text}
