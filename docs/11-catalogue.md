@@ -1,6 +1,8 @@
 # 11 — Catalogue: audit, reconciliation and sync
 
-**Status:** working. The shop shows the whole public catalogue. Prices come from the official store, and the page labels how fresh they are. **The official store is authoritative**: it confirms the final price, stock and checkout.
+**Status (owner demonstration):** the Shop uses a **verified, dated snapshot** of the public store (28 Nov 2026, Dubai time). It is not synchronised live. The page states the date, and **the official store is authoritative** for current prices, stock, volume options, checkout and payment.
+
+> **Change for the owner demonstration.** The build-time sync and live price refresh described in §4 were removed. An independent audit found that a successful sync could still render the older snapshot, and that live refresh didn't reconcile availability or purchase controls fully. A dated snapshot is predictable and honest; a reliable sync is deferred to the commercial implementation (doc 15). Direct cart links are now limited to products whose cart behaviour is verified: simple products (`?add-to-cart=ID`) and the two individually read variations (French Open 5292, Arabic Coffee 5394). Every other variable oil links to its official product page, where the store handles the volume choice. Data embedded in pages is serialised with `safeJson()`, which escapes `<`, `>`, `&` and line separators.
 
 ## 1. Source
 
@@ -52,7 +54,7 @@ These are differences between store listings, or between the store and the publi
 
 Of the 67 scents in the published collection, **22** are matched to a purchasable listing with the same name (`match: 'same'` in the overlay). Mismatched listings are never used for a scent's "Buy" link. White Tea is deliberately not linked, because its listing carries Deep Green's notes.
 
-## 4. How the data flows
+## 4. How the data flowed in Phase B (superseded, see the note at the top)
 
 ```
 1. Audited snapshot      src/data/catalog/snapshot.ts      always available (last-known-good)

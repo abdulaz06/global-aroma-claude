@@ -1,7 +1,7 @@
 {
-  "name": "global-aroma-claude",
+  "name": "global-aroma-website",
   "version": "1.0.0",
-  "description": "",
+  "description": "Global Aroma website, shop, staff workspace demonstration and social kit (unofficial concept).",
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
@@ -11,18 +11,14 @@
     "check": "astro check",
     "social": "node scripts/render-social.mjs",
     "reel": "node scripts/render-reel.mjs",
-    "sync:catalog": "tsx scripts/sync-catalog.ts",
-    "prebuild": "tsx scripts/sync-catalog.ts",
     "test:unit": "node --import tsx --test tests/unit/*.test.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@astrojs/node": "^11.1.14",
     "@astrojs/preact": "^6.1.6",
     "@astrojs/sitemap": "^3.7.6",
-    "@astrojs/vercel": "^11.0.22",
     "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource-variable/schibsted-grotesk": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",

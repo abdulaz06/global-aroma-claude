@@ -1,4 +1,5 @@
 ---
+import { safeJson } from '../lib/safe-json';
 import Base from '../layouts/Base.astro';
 import ScentMap from '../components/ScentMap.astro';
 import ScentFinder from '../components/ScentFinder.astro';
@@ -167,7 +168,7 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
   </section>
 
   <ScentDialog />
-  <script type="application/json" id="scent-data" set:html={JSON.stringify(clientScents())} />
+  <script type="application/json" id="scent-data" set:html={safeJson(clientScents())} />
 </Base>
 
 <script>

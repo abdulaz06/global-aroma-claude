@@ -1,4 +1,5 @@
 ---
+import { safeJson } from '../lib/safe-json';
 /**
  * Shop: the merchant's whole public catalogue (synced from the WooCommerce
  * Store API), with purchase hand-off to the existing store. This page never
@@ -18,7 +19,7 @@ const accords = ACCORDS.filter((a) => shopProducts.some((p) => p.scent?.dominant
 const ordered = [...shopProducts].sort((a, b) =>
   (+b.purchasable - +a.purchasable) || (a.category === b.category ? 0 : a.category === 'oils' ? -1 : 1) || (+!!b.scent - +!!a.scent) || a.title.localeCompare(b.title));
 const readAt = new Date(catalog.meta.readAt);
-const readLabel = readAt.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' }) + ' GST';
+const readLabel = readAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Dubai' });
 ---
 <Base title="Shop oils and diffusers" description={`The Global Aroma catalogue: ${counts.oils} diffuser oils and ${counts.diffusers} diffusers, with prices from the official store and checkout on globalaroma.me.`} current="shop" og="aroma">
   <section class="s-head">
@@ -29,10 +30,10 @@ const readLabel = readAt.toLocaleString('en-GB', { day: 'numeric', month: 'short
       </div>
       <div class="s-head-side">
         <p class="lead">The full Global Aroma catalogue in one place. Choose here; your cart, payment and delivery are handled by the Global Aroma store.</p>
-        <p class="s-fresh" data-fresh data-read-at={catalog.meta.readAt} data-source={catalog.meta.source}>
+        <p class="s-fresh" data-fresh data-read-at={catalog.meta.readAt}>
           <span class="s-fresh-dot" aria-hidden="true"></span>
-          <span data-fresh-text>Prices and stock from the Global Aroma store, {catalog.meta.source === 'snapshot' ? 'as listed on' : 'checked'} {readLabel}.</span>
-          <span class="muted">Final price and availability are confirmed at checkout.</span>
+          <span data-fresh-text>Products and prices as listed on the Global Aroma store on {readLabel}.</span>
+          <span class="muted">The store confirms the current price, stock and volume options before you pay.</span>
         </p>
       </div>
     </div>
@@ -121,7 +122,7 @@ const readLabel = readAt.toLocaleString('en-GB', { day: 'numeric', month: 'short
     </div>
   </dialog>
 
-  <script type="application/json" id="product-data" set:html={JSON.stringify({ meta: catalog.meta, products: clientProducts() })} />
+  <script type="application/json" id="product-data" set:html={safeJson({ meta: catalog.meta, products: clientProducts() })} />
 </Base>
 
 <script>
@@ -136,8 +137,6 @@ const readLabel = readAt.toLocaleString('en-GB', { day: 'numeric', month: 'short
   .s-fresh { font-size: 0.85rem; display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.6rem; align-items: baseline; color: var(--ink-72); }
   .s-fresh .muted { grid-column: 2; font-size: 0.8rem; }
   .s-fresh-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--ink-32); align-self: center; }
-  .s-fresh[data-state='live'] .s-fresh-dot { background: #3f8a5a; }
-  .s-fresh[data-state='stale'] .s-fresh-dot { background: #b8862b; }
   @media (max-width: 860px) { .s-head-in { grid-template-columns: 1fr; } }
 
   .s-bar { position: sticky; top: var(--nav-h); z-index: 40; background: color-mix(in srgb, var(--paper) 94%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-block: var(--line); }
@@ -215,6 +214,6 @@ const readLabel = readAt.toLocaleString('en-GB', { day: 'numeric', month: 'short
   .pd-notes dd { margin: 0; }
   .pd-vols { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .pd-vol { font-size: 0.8rem; padding: 0.25rem 0.6rem; border: 1px solid var(--ink-32); border-radius: 99px; }
-  .pd-vol.off { color: var(--ink-56); border-style: dashed; }
+  .pd-vol-note { width: 100%; font-size: 0.8rem; color: var(--ink-72); margin-top: 0.2rem; }
   .pd-flag { font-size: 0.82rem; background: color-mix(in srgb, #b8862b 12%, transparent); border-left: 3px solid #b8862b; padding: 0.5rem 0.75rem; }
 </style>

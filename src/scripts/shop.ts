@@ -143,7 +143,7 @@ function openProduct(id: number, from?: HTMLElement | null) {
   $('[data-pd-title]').textContent = p.title;
   $('[data-pd-price]').textContent = p.purchasable && p.price ? fmt(p.price) : 'Price on request';
   $('[data-pd-opt]').textContent = p.buy.option ? `· ${p.buy.option}` : '';
-  $('[data-pd-stock]').textContent = p.purchasable ? (p.inStock ? 'In stock' : p.inStock === false ? 'Out of stock' : '') : '';
+  $('[data-pd-stock]').textContent = '';
   $('[data-pd-sum]').textContent = p.summary ?? '';
   const notes = $('[data-pd-notes]');
   notes.innerHTML = p.notes ? (['top', 'heart', 'base'] as const).map((k) => `<div><dt>${k}</dt><dd>${esc(p.notes![k].join(', '))}</dd></div>`).join('') : '';
@@ -159,13 +159,19 @@ function openProduct(id: number, from?: HTMLElement | null) {
     src.insertAdjacentHTML('beforeend', `<span class="pd-flag" style="display:block;margin-top:.5rem">These notes are the same as <b>${esc(p.collectionTitle)}</b> in the published collection. Global Aroma is confirming the listing.</span>`);
   } else if (flags.length) src.insertAdjacentHTML('beforeend', `<span class="pd-flag" style="display:block;margin-top:.5rem">${esc(flags[0])}</span>`);
   const vols = $('[data-pd-vols]');
-  vols.innerHTML = p.volumes.length
-    ? '<span class="label label-muted" style="width:100%">Volumes on the store</span>' + p.volumes.map((v) => `<span class="pd-vol${v.purchasable ? '' : ' off'}">${esc(v.volume ?? 'Unlabelled')}${v.purchasable ? '' : ' · not sold online'}</span>`).join('')
+  const labelled = p.volumes.filter((v) => v.volume);
+  vols.innerHTML = labelled.length
+    ? '<span class="label label-muted" style="width:100%">Volume options listed on the store</span>' + labelled.map((v) => `<span class="pd-vol">${esc(v.volume!)}</span>`).join('')
+      + (p.buy.cartUrl ? '' : '<span class="pd-vol-note">Choose the volume on the store, which shows its price and availability.</span>')
     : '';
   const cart = $<HTMLAnchorElement>('[data-pd-cart]');
   cart.hidden = !(p.purchasable && p.buy.cartUrl);
   if (p.buy.cartUrl) cart.href = p.buy.cartUrl;
-  $<HTMLAnchorElement>('[data-pd-view]').href = p.buy.productUrl;
+  const view = $<HTMLAnchorElement>('[data-pd-view]');
+  view.href = p.buy.productUrl;
+  const direct = p.purchasable && !p.buy.cartUrl;
+  view.className = direct ? 'btn' : 'btn btn-line';
+  view.firstChild!.textContent = direct ? 'Buy on globalaroma.me ' : 'View on the store ';
   $('[data-pd-sku]').textContent = p.sku ? `SKU ${p.sku}.` : '';
   syncBriefBtn();
   if (!dlg.open) dlg.showModal();
@@ -198,41 +204,3 @@ function openFromHash() {
 }
 openFromHash();
 window.addEventListener('hashchange', openFromHash);
-
-/* ── live price & stock refresh ─────────────────── */
-const fresh = document.querySelector<HTMLElement>('[data-fresh]')!;
-const freshText = fresh.querySelector<HTMLElement>('[data-fresh-text]')!;
-const ageDays = (Date.now() - new Date(data.meta.readAt).getTime()) / 864e5;
-fresh.dataset.state = ageDays > 3 ? 'stale' : 'build';
-
-async function refresh() {
-  try {
-    const ctrl = new AbortController(); const tm = setTimeout(() => ctrl.abort(), 8000);
-    const r = await fetch('/api/catalog.json', { signal: ctrl.signal }); clearTimeout(tm);
-    if (!r.ok) throw new Error(String(r.status));
-    const live = await r.json() as { ok: boolean; readAt: string; items: { id: number; price: number | null; purchasable: boolean; inStock: boolean | null }[] };
-    if (!live.ok) throw new Error('store unavailable');
-    const liveIds = new Set(live.items.map((i) => i.id));
-    for (const it of live.items) {
-      const p = byId.get(it.id); if (!p) continue;
-      const card = grid.querySelector<HTMLElement>(`[data-id="${it.id}"]`);
-      if (it.price && p.purchasable) {
-        p.price = it.price; card?.setAttribute('data-price', String(it.price));
-        const lbl = card?.querySelector('[data-price-label]'); if (lbl) lbl.textContent = fmt(it.price);
-      }
-      p.inStock = it.inStock;
-      const st = card?.querySelector('[data-stock]'); if (st && p.purchasable) st.textContent = it.inStock ? 'In stock' : it.inStock === false ? 'Out of stock' : '';
-    }
-    // A product the store no longer lists: keep it visible but send people to check.
-    for (const p of data.products) if (!liveIds.has(p.id)) {
-      const st = grid.querySelector(`[data-id="${p.id}"] [data-stock]`); if (st) st.textContent = 'Check on the store';
-    }
-    fresh.dataset.state = 'live';
-    const when = new Date(live.readAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    freshText.textContent = `Prices and stock read from the Global Aroma store at ${when}.`;
-  } catch {
-    // Keep the build-time data, and say exactly how old it is.
-    if (ageDays > 3) freshText.textContent = `Prices as listed on the store on ${new Date(data.meta.readAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}. They may have changed; the store shows the current price.`;
-  }
-}
-refresh();

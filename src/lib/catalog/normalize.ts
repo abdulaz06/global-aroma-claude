@@ -76,7 +76,10 @@ export function validateCatalog(c: Catalog, previous?: Catalog): string[] {
 export function buyAction(p: Product): BuyAction {
   if (!p.purchasable) return { productUrl: p.permalink, cartUrl: null, option: null };
   if (p.type === 'variable') {
-    const v = p.variations.find((x) => x.purchasable && x.volume);
+    // Direct cart links only for variations read individually from the store.
+    // Every other variable product goes to its official product page, where
+    // the store handles the volume choice, price and stock.
+    const v = p.variations.find((x) => x.verified && x.purchasable && x.volume);
     if (!v) return { productUrl: p.permalink, cartUrl: null, option: null };
     const slug = v.volume!.replace(/\s+/g, '').toLowerCase();
     return {

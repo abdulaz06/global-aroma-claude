@@ -11,14 +11,15 @@ import { shopProducts } from '../../lib/catalog';
 
 const products = shopProducts
   .filter((p) => p.purchasable && p.price)
-  .map((p) => ({ name: p.title, sku: p.sku, price: p.price!, option: p.buy.option }));
+  // Sample lines show the volume the store prices (500 ml) for variable oils.
+  .map((p) => ({ name: p.title, sku: p.sku, price: p.price!, option: p.type === 'variable' ? '500 ml' : null }));
 ---
 <!doctype html>
 <html lang="en-AE">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Staff Workspace (demonstration) — Global Aroma concept</title>
+  <title>Staff Workspace (demonstration) — Global Aroma</title>
   <meta name="robots" content="noindex, nofollow, noarchive" />
   <meta name="description" content="Demonstration of a staff order view for Global Aroma, using sample data only." />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -29,7 +30,7 @@ const products = shopProducts
   <noscript><p class="sw-demo" style="position:static">Demonstration. This interactive demo needs JavaScript. It uses sample data only.</p></noscript>
   <main id="staff-main"><StaffApp client:load products={products} /></main>
   <footer class="sw-foot">
-    <p>Concept for Global DWC LLC, pending owner approval. Synthetic orders generated in your browser; customer names, contacts, dates, transaction references and payments are fictional. Product names and prices are from the public Global Aroma catalogue. <a href="/">Back to the website</a></p>
+    <p>Concept for Global DWC LLC, pending owner approval. Synthetic orders generated in your browser; customer names, contacts, dates, transaction references and payments are fictional. Product names and prices are from the public Global Aroma catalogue. <a href="/">Back to the website</a> · <a href="/review/">Owner review guide</a></p>
   </footer>
 </body>
 </html>

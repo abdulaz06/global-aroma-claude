@@ -60,3 +60,13 @@ Short, dated decisions with the reason and, where relevant, the measurement. (Fo
 
 **D28 — Preview server management.** Astro 7's `astro preview` runs as a background service; restart it with `astro preview stop` after a build, or the on-demand routes keep serving the previous server bundle. (Found during QA.)
 
+## Owner demonstration
+
+**D29 — A dated snapshot instead of a sync.** For the founders' review, predictability beats freshness: one verified snapshot, stated date, store authoritative. The sync, live refresh and both on-demand routes were removed, so the site is fully static again and deploys exactly like Phase A did.
+
+**D30 — Verified cart links only.** Direct add-to-cart links remain only where verified (simple products, two individually read variations). Other variable oils link to the product page ("Buy on the store"). Every product reaches the right store page; none relies on an inferred variation ID.
+
+**D31 — An owner review guide, outside the customer navigation.** A slim, clearly labelled "Proposal preview" bar and `/review` let the founders find the Staff Workspace and Content Maker without instructions, while the customer navigation stays as it would be at launch. Both are removed at launch.
+
+**D32 — Guided demos.** The Staff Workspace has a four-step walkthrough (simulate, open, view email, reset) that ticks off as you go; the Content Maker is ordered as four steps (fragrance → photograph and format → text → download).
+

@@ -46,11 +46,12 @@ const text = [p.title, p.name, p.sku, p.summary, p.scent?.family, ...(p.scent ? 
       {p.purchasable
         ? <><span class="num" data-price-label>{formatAED(p.price!)}</span>{p.buy.option && <span class="pc-opt">{p.buy.option}</span>}</>
         : <span class="num">Price on request</span>}
-      <span class="pc-stock" data-stock>{p.purchasable ? (p.inStock ? 'In stock' : p.inStock === false ? 'Out of stock' : '') : ''}</span>
     </p>
     <div class="pc-acts">
       {p.purchasable && p.buy.cartUrl
         ? <a class="btn btn-sm" href={p.buy.cartUrl} rel="noopener" data-cart>Add to cart <span class="ext" aria-hidden="true">↗</span><span class="vh">: {p.title}, on the Global Aroma store</span></a>
+        : p.purchasable
+        ? <a class="btn btn-sm" href={p.buy.productUrl} rel="noopener" data-buy>Buy on the store <span class="ext" aria-hidden="true">↗</span><span class="vh">: {p.title}, choose the volume on the Global Aroma store</span></a>
         : <AddButton kind="category" id={`product-${p.id}`} label={p.title} meta="Price on request" division="aroma" url={p.permalink} text="Request a quote" class="btn btn-sm btn-line" />}
       {detailsHref
         ? <a class="act" href={`${detailsHref}#p-${p.id}`}>Details<span class="vh">: {p.title}</span></a>

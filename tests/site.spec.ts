@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 const STORE = /^https:\/\/globalaroma\.me\/product\/[a-z0-9-]+\/(\?.*)?$/;
-const PAGES = ['/', '/aroma/', '/hospitality/', '/technology/', '/shop/', '/brief/', '/contact/'];
+const PAGES = ['/', '/aroma/', '/hospitality/', '/technology/', '/shop/', '/brief/', '/contact/', '/review/'];
 // Product photos load from globalaroma.me; their failure in an offline sandbox is not a site error.
 const ignorable = (t: string) => /globalaroma\.me|ERR_TUNNEL|ERR_NAME_NOT_RESOLVED|ERR_INTERNET_DISCONNECTED/.test(t);
 
@@ -182,15 +182,28 @@ test('shop: full catalogue, categories, search, sort and paging', async ({ page 
   expect(await page.locator('[data-product]:visible').count()).toBeGreaterThan(firstPage);
 });
 
-test('shop: cart and product links use only the store\'s own URLs', async ({ page }) => {
+test('shop: every product leads to the official store; quotes only where unpriced', async ({ page }) => {
   await page.goto('/shop/');
+  const buyable = page.locator('[data-product][data-buyable=true]');
+  const n = await buyable.count();
+  expect(n).toBe(59);
+  for (let k = 0; k < n; k++) {
+    const a = buyable.nth(k).locator('a[data-cart], a[data-buy]');
+    await expect(a).toHaveCount(1);
+    expect(await a.getAttribute('href')).toMatch(STORE);
+  }
+  // Direct cart links: simple products and the individually verified variations only.
   const carts = await page.$$eval('a[data-cart]', (els) => els.map((e) => (e as HTMLAnchorElement).href));
-  expect(carts.length).toBeGreaterThan(40);
-  for (const h of carts) { expect(h).toMatch(STORE); expect(h).toMatch(/add-to-cart=\d+/); }
-  // A variable product hands off its verified variation, nothing guessed.
   expect(carts).toContain('https://globalaroma.me/product/arabic-coffee/?attribute_pa_volume=500ml&variation_id=5394&add-to-cart=5390');
+  expect(carts).toContain('https://globalaroma.me/product/ga-m-h3000/?add-to-cart=5373');
+  for (const h of carts) expect(h).toMatch(/add-to-cart=\d+/);
+  await expect(page.locator('[data-id="5235"] a[data-buy]')).toHaveAttribute('href', 'https://globalaroma.me/product/sweet-catch/');
   // Unpriced listings are quote-only.
-  await expect(page.locator('[data-product][data-buyable=false] a[data-cart]')).toHaveCount(0);
+  await expect(page.locator('[data-product][data-buyable=false]')).toHaveCount(3);
+  await expect(page.locator('[data-product][data-buyable=false] a[data-cart], [data-product][data-buyable=false] a[data-buy]')).toHaveCount(0);
+  // The catalogue date is stated, and nothing claims live synchronisation.
+  await expect(page.locator('[data-fresh]')).toContainText('as listed on the Global Aroma store on 28 November 2026');
+  await expect(page.getByText(/checked just now|live prices|synchroni/i)).toHaveCount(0);
   await expect(page.getByText('orders reach', { exact: false })).toHaveCount(0);
 });
 
@@ -200,27 +213,15 @@ test('shop: product dialog deep-links and shows the notes source', async ({ page
   await expect(dlg).toBeVisible();
   await expect(dlg.locator('[data-pd-title]')).toContainText(/arabic coffee/i);
   await expect(dlg.locator('[data-pd-cart]')).toHaveAttribute('href', STORE);
+  await expect(dlg.locator('[data-pd-vols]')).toContainText('500 ml');
   await page.keyboard.press('Escape');
   await expect(dlg).toBeHidden();
   // In-page hash change opens a product too.
   await page.evaluate(() => { location.hash = '#p-5243'; });
   await expect(dlg).toBeVisible();
-});
-
-test('shop: freshness label never claims live prices when the store is unreachable', async ({ page }) => {
-  await page.route('**/api/catalog.json', (r) => r.fulfill({ json: { ok: false, error: 'store-unavailable' } }));
-  await page.goto('/shop/');
-  const fresh = page.locator('[data-fresh]');
-  await expect(fresh).not.toHaveAttribute('data-state', 'live');
-  await expect(fresh).toContainText(/store/i);
-});
-
-test('catalogue endpoint fails soft and is not cached when the store is down', async ({ request }) => {
-  const r = await request.get('/api/catalog.json');
-  expect(r.status()).toBe(200);
-  const j = await r.json();
-  if (!j.ok) expect(r.headers()['cache-control']).toContain('no-store');
-  expect(r.headers()['x-robots-tag']).toContain('noindex');
+  await expect(dlg.locator('[data-pd-cart]')).toBeHidden();
+  await expect(dlg.locator('[data-pd-view]')).toHaveAttribute('href', 'https://globalaroma.me/product/royal-residence/');
+  await expect(dlg.locator('[data-pd-view]')).toContainText('Buy on globalaroma.me');
 });
 
 test('scent finder recommends by feel, keeps the space for the brief', async ({ page }) => {
@@ -255,6 +256,8 @@ test('touch: tapping the scent map lists nearest scents instead of hitting a dot
 test('staff demo: labelled synthetic data, simulate, notify, inspect, reset', async ({ page }) => {
   await page.goto('/staff-demo/');
   await expect(page.getByText('Demonstration — sample data only. Not connected to live customer orders.').first()).toBeVisible();
+  await expect(page.getByTestId('guide')).toBeVisible();
+  await expect(page.getByTestId('step-open')).toBeDisabled();
   const view = page.locator('[data-testid=orders-table]:visible, [data-testid=orders-cards]:visible');
   await expect(view).toHaveCount(1);
   const text = await page.locator('body').innerText();
@@ -292,13 +295,40 @@ test('staff demo renders privately, without errors', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('live staff endpoint is disabled, private and read-only', async ({ request }) => {
-  const r = await request.get('/api/staff/orders.json', { headers: { 'x-staff-user': 'admin', authorization: 'Bearer forged' } });
-  expect(r.status()).toBe(404);
-  expect(r.headers()['cache-control']).toContain('no-store');
-  expect((await r.text())).not.toMatch(/billing|@/);
-  const w = await request.post('/api/staff/orders.json', { data: {} });
-  expect([403, 405]).toContain(w.status());
+test('no live order endpoint exists in the public demonstration', async ({ request }) => {
+  for (const path of ['/api/staff/orders.json', '/api/catalog.json']) {
+    const r = await request.get(path, { headers: { authorization: 'Bearer forged', 'x-staff-user': 'admin' } });
+    expect(r.status(), path).toBe(404);
+    expect(await r.text()).not.toMatch(/billing|"orders"|consumer_key/);
+  }
+});
+
+test('staff walkthrough steps tick off in order', async ({ page }) => {
+  await page.goto('/staff-demo/');
+  await page.getByTestId('step-simulate').click();
+  await expect(page.getByTestId('toast')).toBeVisible();
+  await page.getByTestId('step-open').click();
+  await expect(page.getByTestId('order-detail')).toContainText('Volume:');
+  await page.keyboard.press('Escape');
+  await page.getByTestId('step-email').click();
+  await expect(page.getByTestId('email-preview')).toContainText('No email has been sent');
+  await page.keyboard.press('Escape');
+  page.once('dialog', (d) => d.accept());
+  await page.getByTestId('step-reset').click();
+  await expect(page.locator('.sw-steps .ok')).toHaveCount(4);
+});
+
+test('owner review guide links to every demonstration, and the bar is on every page', async ({ page, request }) => {
+  await page.goto('/review/');
+  for (const href of ['/', '/aroma#finder-sec', '/shop', '/staff-demo', '/studio/make']) {
+    await expect(page.locator(`.rv-acts a[href="${href}"]`)).toHaveCount(1);
+    expect((await request.get(href.split('#')[0])).status(), href).toBe(200);
+  }
+  await page.goto('/shop/');
+  await expect(page.locator('.review-bar a[href="/review/"]')).toBeVisible();
+  await page.goto('/');
+  await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href', 'https://global-aroma-website.vercel.app/');
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://global-aroma-website.vercel.app/og/home.png');
 });
 
 test('studio tools: favicon, content maker download, reel fits small screens', async ({ page, request }) => {

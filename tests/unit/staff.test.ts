@@ -5,9 +5,8 @@ import { guardStaffRequest, PRIVATE_HEADERS } from '../../src/lib/server/staff-g
 import { mapWooOrder } from '../../src/staff/woocommerce';
 import { DemoOrderSource, seedOrders } from '../../src/staff/demo-source';
 import { applyQuery, itemCount, paymentState } from '../../src/staff/types';
-import { GET, ALL } from '../../src/pages/api/staff/orders.json.ts';
 
-const req = (h: Record<string, string> = {}) => new Request('https://example.com/api/staff/orders.json', { headers: h });
+const req = (h: Record<string, string> = {}) => new Request('https://example.com/api/staff/orders', { headers: h });
 const FULL = { STAFF_LIVE_ENABLED: 'true', WC_API_URL: 'https://globalaroma.me', WC_CONSUMER_KEY: 'ck_test', WC_CONSUMER_SECRET: 'cs_test' };
 const products = [
   { name: 'Arabic Coffee', sku: 'GA-701831-A', price: 280, option: '500 ml' },
@@ -23,17 +22,6 @@ test('staff guard fails closed at every step', async () => {
   // Fully configured, with forged headers, is still refused: no identity provider exists yet.
   const forged = req({ Authorization: 'Bearer anything', Cookie: 'staff=1', 'X-Staff': 'admin' });
   assert.deepEqual(await guardStaffRequest(forged, FULL), { ok: false, status: 401, reason: 'unauthenticated' });
-});
-
-test('staff endpoint: not found by default, never cached, read-only', async () => {
-  const res = await GET({ request: req() } as any);
-  assert.equal(res.status, 404);
-  assert.equal(res.headers.get('cache-control'), PRIVATE_HEADERS['Cache-Control']);
-  assert.match(res.headers.get('x-robots-tag') ?? '', /noindex/);
-  const body = await res.text();
-  assert.ok(!/customer|email|billing/i.test(body));
-  const post = await ALL({ request: new Request('https://example.com/api/staff/orders.json', { method: 'POST' }) } as any);
-  assert.equal(post.status, 405);
 });
 
 test('WooCommerce order maps to the staff model with variations, SKUs and totals', () => {

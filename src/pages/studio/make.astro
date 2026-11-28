@@ -1,4 +1,5 @@
 ---
+import { safeJson } from '../../lib/safe-json';
 /**
  * Content maker (internal, unlisted, noindex). A staff-friendly front end to
  * the social templates: pick a format, a layout, a fragrance and a photo, edit
@@ -35,14 +36,31 @@ const scentData = scents.map((s) => ({ slug: s.slug, title: s.title, family: s.f
   <meta name="robots" content="noindex, nofollow" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <title>Content maker — Global Aroma (internal concept)</title>
+  <title>Content maker — Global Aroma</title>
 </head>
 <body class="mk">
-  <p class="mk-banner">Internal tool · Everything stays in this browser. Nothing is uploaded, saved or posted. Photos marked “concept” are illustrative and must be replaced with approved photography before publishing.</p>
+  <p class="mk-banner">Demonstration tool · Everything stays in this browser: nothing is uploaded, saved or posted. Photos marked “concept” are illustrative and would be replaced with Global Aroma’s approved photography. <a href="/review/">Owner review guide</a></p>
   <main class="mk-main">
     <form class="mk-panel" data-form onsubmit="return false">
       <h1>Content maker</h1>
-      <p class="mk-lede">Make a post in the Global Aroma style in a minute: the fragrance’s signature is drawn from its notes, so every scent looks like itself.</p>
+      <p class="mk-lede">Make an on-brand post in four steps. Each fragrance’s signature is drawn from its notes, so every scent looks like itself.</p>
+
+      <section class="mk-step"><h2><span>1</span> Choose a fragrance</h2>
+      <label class="mk-field">Fragrance
+        <select name="scent">{scentData.map((s) => <option value={s.slug} selected={s.slug === 'arabic-coffee'}>{s.title}</option>)}</select>
+      </label>
+
+      </section>
+
+      <section class="mk-step"><h2><span>2</span> Choose a photograph and format</h2>
+      <fieldset>
+        <legend>Style</legend>
+        <div class="mk-seg">
+          <label><input type="radio" name="layout" value="photo" checked /> Photo + signature</label>
+          <label><input type="radio" name="layout" value="signature" /> Signature</label>
+          <label><input type="radio" name="layout" value="notes" /> Notes card</label>
+        </div>
+      </fieldset>
 
       <fieldset>
         <legend>Format</legend>
@@ -53,43 +71,37 @@ const scentData = scents.map((s) => ({ slug: s.slug, title: s.title, family: s.f
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend>Layout</legend>
-        <div class="mk-seg">
-          <label><input type="radio" name="layout" value="signature" checked /> Signature</label>
-          <label><input type="radio" name="layout" value="photo" /> Photo + signature</label>
-          <label><input type="radio" name="layout" value="notes" /> Notes card</label>
-        </div>
-      </fieldset>
-
-      <label class="mk-field">Fragrance
-        <select name="scent">{scentData.map((s) => <option value={s.slug} selected={s.slug === 'arabic-coffee'}>{s.title}</option>)}</select>
-      </label>
-
       <fieldset data-photo-set>
-        <legend>Photo <small>(Photo layout)</small></legend>
+        <legend>Photograph <small>(for the “Photo + signature” style)</small></legend>
         <div class="mk-photos">
           {photos.map((p, i) => <label class="mk-ph"><input type="radio" name="photo" value={p.src} data-fx={p.fx} checked={i === 0} /><img src={p.src} alt="" width="96" height="72" loading="lazy" /><span>{p.label} <em>concept</em></span></label>)}
         </div>
         <label class="mk-upload">Or use your own approved photo <input type="file" accept="image/*" data-upload /></label>
       </fieldset>
 
+      </section>
+
+      <section class="mk-step"><h2><span>3</span> Customize the text</h2>
       <label class="mk-field">Headline <input name="headline" maxlength="60" placeholder="Defaults to the fragrance name" /></label>
       <label class="mk-field">Small line <input name="sub" maxlength="70" placeholder="Defaults to the fragrance family" /></label>
       <label class="mk-field">Footer <input name="cta" maxlength="40" value="globalaroma.me" /></label>
       <label class="mk-check"><input type="checkbox" name="safe" /> Show platform safe zones (not exported)</label>
 
+      </section>
+
+      <section class="mk-step"><h2><span>4</span> Download</h2>
       <div class="mk-actions">
         <button type="button" class="btn" data-download>Download PNG</button>
         <span class="mk-size" data-size></span>
       </div>
       <p class="mk-fine">Prices are left off on purpose: they change, and posts stay up. Link to the product instead. For the full planned set, see the <a href="/studio/">social studio</a>.</p>
+      </section>
     </form>
 
     <div class="mk-stage"><div class="mk-cw" data-cw><canvas data-canvas width="1080" height="1350" aria-label="Preview of the post"></canvas></div></div>
   </main>
 
-  <script type="application/json" id="mk-scents" set:html={JSON.stringify(scentData)} />
+  <script type="application/json" id="mk-scents" set:html={safeJson(scentData)} />
   <script>
     type S = { slug: string; title: string; family: string; top: string[]; heart: string[]; base: string[]; online: boolean };
     const scents: S[] = JSON.parse(document.getElementById('mk-scents')!.textContent!);
@@ -219,7 +231,6 @@ const scentData = scents.map((s) => ({ slug: s.slug, title: s.title, family: s.f
       const s = String(new FormData(form).get('scent'));
       canvas.toBlob((b) => { if (!b) return; const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `global-aroma-${s}-${canvas.width}x${canvas.height}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }, 'image/png');
     });
-    document.querySelector<HTMLElement>('[data-photo-set]')!.classList.add('dim');
     draw();
   </script>
 </body>
@@ -230,6 +241,10 @@ const scentData = scents.map((s) => ({ slug: s.slug, title: s.title, family: s.f
   .mk-banner { margin: 0; padding: 0.6rem 1.25rem; background: var(--ink); color: var(--paper); font-size: 0.82rem; }
   .mk-main { display: grid; grid-template-columns: minmax(18rem, 26rem) 1fr; gap: 2rem; padding: 1.5rem; align-items: start; }
   .mk-panel { display: grid; gap: 1.1rem; background: var(--paper); padding: 1.5rem; border: var(--line); }
+  .mk-banner a { color: inherit; text-decoration: underline; margin-left: 0.4rem; }
+  .mk-step { display: grid; gap: 0.9rem; border-top: var(--line); padding-top: 1rem; }
+  .mk-step h2 { margin: 0; font-size: 1rem; font-weight: 650; display: flex; gap: 0.6rem; align-items: center; }
+  .mk-step h2 span { width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-size: 0.8rem; }
   .mk-panel h1 { font-family: var(--f-serif); font-weight: 400; font-size: 2rem; letter-spacing: -0.02em; margin: 0; }
   .mk-lede, .mk-fine { font-size: 0.85rem; color: var(--ink-72); margin: 0; }
   .mk fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 0.5rem; transition: opacity 0.2s; }

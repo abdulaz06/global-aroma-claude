@@ -56,6 +56,10 @@ export default function StaffApp({ products }: { products: DemoProduct[] }) {
   const [toasts, setToasts] = useState<Order[]>([]);
   const [bellOpen, setBellOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
+  // Guided walkthrough for first-time visitors: each step can be done from here.
+  const [guide, setGuide] = useState(true);
+  const [done, setDone] = useState({ simulate: false, open: false, email: false, reset: false });
+  const mark = (k: keyof typeof done) => setDone((d) => (d[k] ? d : { ...d, [k]: true }));
   const drawer = useRef<HTMLDialogElement>(null);
   const emailDlg = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
@@ -96,6 +100,7 @@ export default function StaffApp({ products }: { products: DemoProduct[] }) {
   function openOrder(id: number, el?: EventTarget | null) {
     opener.current = (el as HTMLElement) ?? (document.activeElement as HTMLElement);
     source.markSeen(id); setOrders([...source.all()]); setOpenId(id); setBellOpen(false);
+    if (done.simulate) mark('open');
   }
   useEffect(() => {
     const d = drawer.current; if (!d) return;
@@ -104,26 +109,42 @@ export default function StaffApp({ products }: { products: DemoProduct[] }) {
   }, [open]);
   useEffect(() => {
     const d = emailDlg.current; if (!d) return;
-    if (emailFor && !d.open) d.showModal();
+    if (emailFor && !d.open) { d.showModal(); mark('email'); }
     if (!emailFor && d.open) d.close();
   }, [emailFor]);
 
   function simulate() {
     const o = source.simulate();
     setOrders([...source.all()]);
+    mark('simulate');
     setToasts((t) => [o, ...t].slice(0, 3));
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== o.id)), 9000);
   }
   function reset() {
     if (!window.confirm) { /* no dialogs available */ }
     source.reset(); setOrders([...source.all()]); setOpenId(null); setToasts([]); setTab('all'); setQ(''); setRange('any');
+    if (done.simulate) mark('reset');
   }
   const latest = orders[0];
   const unseenList = orders.filter((o) => o.unseen);
 
   return (
     <div class="sw">
-      <div class="sw-demo" role="note"><b>Demonstration</b> — sample data only. Not connected to live customer orders.</div>
+      <div class="sw-demo" role="note"><b>Demonstration</b> — sample data only. Not connected to live customer orders. <a href="/review/">Review guide</a></div>
+      {guide && (
+        <section class="sw-guide" aria-label="Try the demonstration" data-testid="guide">
+          <div class="sw-guide-hd">
+            <p><b>Try it in four steps.</b> This is how staff would see a new order arrive. Everything here is fictional; nothing is sent.</p>
+            <button type="button" class="sw-link" onClick={() => setGuide(false)}>Hide</button>
+          </div>
+          <ol class="sw-steps">
+            <li class={done.simulate ? 'ok' : ''}><button type="button" onClick={simulate} data-testid="step-simulate"><span class="sw-n">{done.simulate ? '✓' : '1'}</span><span><b>Simulate a new order</b><small>A notification appears and the counters update</small></span></button></li>
+            <li class={done.open ? 'ok' : ''}><button type="button" disabled={!done.simulate} onClick={(e) => { const o = unseenList[0] ?? orders[0]; if (o) openOrder(o.id, e.currentTarget); }} data-testid="step-open"><span class="sw-n">{done.open ? '✓' : '2'}</span><span><b>Open the order</b><small>Customer, products, volume, quantity, time, amount, payment and status</small></span></button></li>
+            <li class={done.email ? 'ok' : ''}><button type="button" onClick={() => latest && setEmailFor(latest)} data-testid="step-email"><span class="sw-n">{done.email ? '✓' : '3'}</span><span><b>View the new-order email</b><small>An example of the alert staff would receive</small></span></button></li>
+            <li class={done.reset ? 'ok' : ''}><button type="button" onClick={reset} data-testid="step-reset"><span class="sw-n">{done.reset ? '✓' : '4'}</span><span><b>Reset the demonstration</b><small>Back to the original sample orders</small></span></button></li>
+          </ol>
+        </section>
+      )}
       <header class="sw-top">
         <div class="sw-brand"><span class="sw-mark" aria-hidden="true" /><span><b>Global Aroma</b> <span class="sw-sub">Staff · Orders</span></span></div>
         <div class="sw-top-acts">

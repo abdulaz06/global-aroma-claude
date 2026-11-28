@@ -4,9 +4,10 @@
  * ordered by id) on 27 Nov 2026. 62 products: 48 Oils + 14 Diffusers, matching
  * the API's category counts. See docs/11-catalogue.md.
  *
- * At build time `scripts/sync-catalog.mjs` replaces this with a fresh read
- * when the store is reachable (src/generated/catalog.json). This file is the
- * fallback, and the site always shows which one it is using and when it was read.
+ * This snapshot is the demonstration's catalogue: the Shop states the date it
+ * was read and sends every purchase to the official store, which confirms
+ * prices, stock and options. Variation IDs other than VERIFIED_VARIATIONS follow
+ * the store's consecutive numbering and are not used for direct cart links.
  *
  * Format per product:
  *  [id, name, slug, sku, category, type, price, purchasable, image, variations]
@@ -87,7 +88,7 @@ const ROWS: Row[] = [
   [5542, 'GLOBAL SHADES', 'global-shades', 'GA-400066-1-15', 'oils', 'variable', 210, true, OIL, v4(5550, 5551, 5552, 5553)],
 ];
 
-/** Variation prices read individually during the audit (others follow the same pattern; the build-time sync reads them all). */
+/** Variations read individually during the audit; only these get direct cart links. */
 const VERIFIED_VARIATIONS: Record<number, { price: number; purchasable: boolean }> = {
   5263: { price: 0, purchasable: false }, 5292: { price: 237, purchasable: true },
   5391: { price: 0, purchasable: false }, 5394: { price: 280, purchasable: true },
@@ -99,7 +100,7 @@ export const snapshotMeta: CatalogMeta = {
   source: 'snapshot',
   readAt: '2026-11-27T23:55:00-06:00',
   origin: 'https://globalaroma.me/wp-json/wc/store/v1/products',
-  note: 'Manual audit of the public Store API; variation prices other than those listed in VERIFIED_VARIATIONS follow the observed pattern (only 500 ml is priced) and are re-read by the build-time sync.',
+  note: 'Manual audit of the public Store API; variation prices other than those listed in VERIFIED_VARIATIONS follow the observed pattern (only 500 ml is priced) and are not used for direct cart links; the store confirms them at checkout. Not synchronised: a dated snapshot. sync.',
 };
 
 export const snapshotProducts: Product[] = ROWS.map(([id, name, slug, sku, category, type, price, purchasable, image, vars]) => {

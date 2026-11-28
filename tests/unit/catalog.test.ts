@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeProduct, validateCatalog, buyAction } from '../../src/lib/catalog/normalize';
-import { readLiveCatalog } from '../../src/lib/server/catalog-live';
 import { snapshotProducts, snapshotMeta } from '../../src/data/catalog/snapshot';
 
 const rawVariable = {
@@ -54,14 +53,20 @@ test('validation refuses a suspiciously small or broken read', () => {
   assert.ok(validateCatalog({ meta: snapshotMeta, products: [snapshotProducts[0], snapshotProducts[0]] }).length > 0);
 });
 
-test('live reader returns prices, and null (not stale data) when the store fails', async () => {
-  const ok = (async () => new Response(JSON.stringify([rawVariable]), { status: 200 })) as unknown as typeof fetch;
-  const live = await readLiveCatalog('https://globalaroma.me', 1000, ok);
-  assert.equal(live!.items[0].price, 280);
-  const down = (async () => new Response('nope', { status: 502 })) as unknown as typeof fetch;
-  assert.equal(await readLiveCatalog('https://globalaroma.me', 1000, down), null);
-  const boom = (async () => { throw new Error('network'); }) as unknown as typeof fetch;
-  assert.equal(await readLiveCatalog('https://globalaroma.me', 1000, boom), null);
-  const garbage = (async () => new Response('{"not":"an array"}', { status: 200 })) as unknown as typeof fetch;
-  assert.equal(await readLiveCatalog('https://globalaroma.me', 1000, garbage), null);
+test('serialised data cannot close the script element', async () => {
+  const { safeJson } = await import('../../src/lib/safe-json.ts');
+  const out = safeJson({ name: '</script><img src=x onerror=alert(1)> & \u2028' });
+  assert.ok(!out.includes('<') && !out.includes('>') && !out.includes('&'));
+  assert.deepEqual(JSON.parse(out), { name: '</script><img src=x onerror=alert(1)> & \u2028' });
+});
+
+test('direct cart links only for verified variations; other variable oils go to the product page', async () => {
+  const { buyAction } = await import('../../src/lib/catalog/normalize.ts');
+  const byId = new Map(snapshotProducts.map((p) => [p.id, p]));
+  assert.equal(buyAction(byId.get(5390)!).cartUrl, 'https://globalaroma.me/product/arabic-coffee/?attribute_pa_volume=500ml&variation_id=5394&add-to-cart=5390');
+  const sweet = buyAction(byId.get(5235)!);
+  assert.equal(sweet.cartUrl, null);
+  assert.equal(sweet.productUrl, 'https://globalaroma.me/product/sweet-catch/');
+  assert.equal(buyAction(byId.get(5373)!).cartUrl, 'https://globalaroma.me/product/ga-m-h3000/?add-to-cart=5373');
+  assert.equal(buyAction(byId.get(5426)!).cartUrl, null);
 });
