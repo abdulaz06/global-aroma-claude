@@ -79,45 +79,6 @@ YELLOW AMBER | Oriental | elemi, cedar | carnation, davana, cinnamon, cashmere w
 SCENSE HE | Citrus Floral | lemon, orange, lavender, apple, pineapple | jasmine, lily of the valley, magnolia, rose, gardenia | musk, sandalwood, patchouli, amber |
 `;
 
-/** Library names that are also sold in the online store, with the store's listed price (AED). */
-export const storeOils: Record<string, { url: string; price: number }> = {
-  'FRANGIPANI': { url: 'https://globalaroma.me/product/frangipani/', price: 255 },
-  'WHITE BEACH': { url: 'https://globalaroma.me/product/white-beach/', price: 285 },
-  'PARADISE LAND': { url: 'https://globalaroma.me/product/paradise-land/', price: 204.42 },
-  'ROYAL RESIDENCE': { url: 'https://globalaroma.me/product/royal-residence/', price: 301 },
-  'LEATHER BOUQUET': { url: 'https://globalaroma.me/product/leather-bouquet/', price: 248.4 },
-  'WHITE TEA': { url: 'https://globalaroma.me/product/white-tea/', price: 207 },
-  'GINGER EARTH': { url: 'https://globalaroma.me/product/ginger-earth/', price: 205 },
-  'ROYAL FLOWER': { url: 'https://globalaroma.me/product/royal-flower/', price: 305 },
-  'SULTAN OF DECENCY': { url: 'https://globalaroma.me/product/sultan-of-decency/', price: 345 },
-  'GINGER BLOSSOM': { url: 'https://globalaroma.me/product/ginger-blossom/', price: 205 },
-  'GINGERBREAD DELIGHT': { url: 'https://globalaroma.me/product/gingerbread-delight/', price: 205 },
-  'ROYAL CLASS': { url: 'https://globalaroma.me/product/royal-class/', price: 240 },
-  'HEAVEN ON EARTH': { url: 'https://globalaroma.me/product/heaven-on-earth/', price: 265 },
-  'GREEN TEA LEMONGRASS': { url: 'https://globalaroma.me/product/green-tea-lemongrass/', price: 205 },
-  'ALOE VERA-CUCUMBER': { url: 'https://globalaroma.me/product/aloe-vera-cucumber/', price: 205 },
-  'GREEN FIG LEAVES': { url: 'https://globalaroma.me/product/green-fig-leaves/', price: 205 },
-  'ENGLISH LAVENDER': { url: 'https://globalaroma.me/product/english-lavender/', price: 220 },
-  'APPLE-CINNAMON': { url: 'https://globalaroma.me/product/apple-cinnamon/', price: 205 },
-  'DROP IN WHITE': { url: 'https://globalaroma.me/product/drop-in-white/', price: 273 },
-  'ARABIC COFFEE': { url: 'https://globalaroma.me/product/arabic-coffee/', price: 280 },
-  'MAINSAIL': { url: 'https://globalaroma.me/product/mainsail/', price: 240 },
-  'YELLOW AMBER': { url: 'https://globalaroma.me/product/yellow-amber/', price: 210 },
-  'SCENSE HE': { url: 'https://globalaroma.me/product/scense-he/', price: 230 },
-};
-
-/** Oils sold in the store that are not in the published collection (no note data on the collection page). */
-export const storeOnlyOils: { name: string; url: string; price: number }[] = [
-  ['GLOBAL SHADES', 'global-shades', 210], ['AQUA ROSE', 'aqua-rose', 210], ['FOUR SEASONS', 'four-seasons', 210],
-  ['SMOKY FROST', 'smoky-frost', 275], ['GOLD FEVER', 'gold-fever', 210], ['DROP IN GOLD', 'drop-in-gold', 210],
-  ['BLACK EARTH', 'black-earth', 255], ['GRAPEFRUITS MANDARIN', 'grapefruits-mandarin', 210], ['SIMPLE AMBER', 'simple-amber', 255],
-  ['GREEN TEA BAMBOO', 'green-tea-bamboo', 225], ['ADDRESS', 'address', 290], ['ROYAL AMBIENCE', 'royal-ambience', 215],
-  ['GREEN GLOBAL', 'green-global', 245], ['HIBISCUS PUNCH', 'hibiscus-punch', 235], ['SWEET WISH', 'sweet-wish', 255],
-  ['FOCUS', 'focus', 345], ['INTENSE INTEREST', 'intense-interest', 253.8], ['BLUE WATERMEN', 'blue-watermen', 282],
-  ['LUXURY', 'luxury', 252], ['REASON TO HAVE', 'reason-to-have', 273], ['FOR YOU', 'for-you', 281],
-  ['FAMOUS OUD', 'famous-oud', 329], ['SWEET CATCH', 'sweet-catch', 276], ['FRENCH OPEN', 'french-open', 237],
-].map(([name, slug, price]) => ({ name: name as string, url: `https://globalaroma.me/product/${slug}/`, price: price as number }));
-
 export interface RawScent {
   name: string;
   family: string;

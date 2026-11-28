@@ -1,0 +1,95 @@
+---
+/**
+ * One catalogue product. Shows the generated signature (where the listing
+ * has notes) beside the store's own product photo, never one dressed up as
+ * the other. Purchase links come from buyAction(): only the store's URLs.
+ */
+import type { ShopProduct } from '../lib/catalog';
+import { formatAED } from '../data/diffusers';
+import { ACCORD_LABEL, PIGMENT } from '../lib/accords';
+import AddButton from './AddButton.astro';
+interface Props { p: ShopProduct; eager?: boolean; detailsHref?: string }
+const { p, eager = false, detailsHref } = Astro.props;
+const Media = detailsHref ? 'a' : 'button';
+const mediaProps = detailsHref ? { href: `${detailsHref}#p-${p.id}`, tabindex: -1 } : { type: 'button', 'data-open-product': p.id };
+const text = [p.title, p.name, p.sku, p.summary, p.scent?.family, ...(p.scent ? [...p.scent.top, ...p.scent.heart, ...p.scent.base] : [])].filter(Boolean).join(' ').toLowerCase();
+---
+<li class="pc" id={`p-${p.id}`} data-product data-id={p.id} data-cat={p.category} data-price={p.price ?? ''} data-name={p.title} data-text={text}
+  data-accords={p.scent?.dominant.join(' ') ?? ''} data-notes={String(!!p.scent)} data-buyable={String(p.purchasable)}>
+  <Media class="pc-media" {...mediaProps} aria-label={`Details: ${p.title}`}>
+    {p.signature ? (
+      <>
+        <img class="pc-sig" src={p.signature} alt="" width="400" height="400" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+        {p.image && <img class="pc-photo-sm" src={p.image} alt="" width="120" height="120" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()" />}
+      </>
+    ) : (
+      <span class:list={['pc-photo', p.category]}>
+        <svg class="pc-pict" viewBox="0 0 120 120" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+          {p.category === 'oils'
+            ? <><rect x="44" y="40" width="32" height="56" rx="4" /><path d="M52 40V30h16v10M50 30h20" /><path d="M48 72h24" opacity=".5" /></>
+            : p.hvac
+              ? <><path d="M10 84h100M10 94h100" /><path d="M46 84V56h28v28" /><path d="M60 56V38" /><path d="M54 32c4-4 8-4 12 0M50 26c6-6 14-6 20 0" opacity=".6" /></>
+              : <><rect x="48" y="46" width="24" height="44" rx="4" /><path d="M54 46v-5h12v5" /><path d="M54 34c4-4 8-4 12 0M50 28c6-6 14-6 20 0M46 22c8-8 20-8 28 0" opacity=".6" /><path d="M38 90h44" /></>}
+        </svg>
+        {p.image && <img src={p.image} alt={`${p.title}, product photo from the Global Aroma store`} width="300" height="300" loading={eager ? 'eager' : 'lazy'} decoding="async" referrerpolicy="no-referrer" onerror="this.remove()" />}
+      </span>
+    )}
+    {p.hvac && <span class="pc-tag">HVAC</span>}
+  </Media>
+  <div class="pc-body">
+    <p class="pc-kind label label-muted">{p.category === 'oils' ? (p.scent ? p.scent.family : 'Diffuser oil') : 'Diffuser'}</p>
+    <h3 class="pc-name">{detailsHref ? <a href={`${detailsHref}#p-${p.id}`}>{p.title}</a> : <button type="button" data-open-product={p.id}>{p.title}</button>}</h3>
+    {p.scent
+      ? <p class="pc-acc">{p.scent.dominant.slice(0, 2).map((a) => <span><i class="dot" style={`background:${PIGMENT[a]}`} />{ACCORD_LABEL[a]}</span>)}</p>
+      : <p class="pc-sum">{p.summary ?? (p.category === 'oils' ? 'Notes on request.' : '')}</p>}
+    <p class="pc-price">
+      {p.purchasable
+        ? <><span class="num" data-price-label>{formatAED(p.price!)}</span>{p.buy.option && <span class="pc-opt">{p.buy.option}</span>}</>
+        : <span class="num">Price on request</span>}
+      <span class="pc-stock" data-stock>{p.purchasable ? (p.inStock ? 'In stock' : p.inStock === false ? 'Out of stock' : '') : ''}</span>
+    </p>
+    <div class="pc-acts">
+      {p.purchasable && p.buy.cartUrl
+        ? <a class="btn btn-sm" href={p.buy.cartUrl} rel="noopener" data-cart>Add to cart <span class="ext" aria-hidden="true">↗</span><span class="vh">: {p.title}, on the Global Aroma store</span></a>
+        : <AddButton kind="category" id={`product-${p.id}`} label={p.title} meta="Price on request" division="aroma" url={p.permalink} text="Request a quote" class="btn btn-sm btn-line" />}
+      {detailsHref
+        ? <a class="act" href={`${detailsHref}#p-${p.id}`}>Details<span class="vh">: {p.title}</span></a>
+        : <button type="button" class="act" data-open-product={p.id}>Details<span class="vh">: {p.title}</span></button>}
+    </div>
+  </div>
+</li>
+
+<style>
+  .pc { display: grid; grid-template-rows: auto 1fr; border-right: var(--line); border-bottom: var(--line); background: var(--paper); }
+  .pc[hidden] { display: none; }
+  .pc-media { position: relative; display: grid; place-items: center; aspect-ratio: 1; background: var(--paper-2); border: 0; padding: 0; cursor: pointer; overflow: hidden; width: 100%; }
+  .pc-sig { width: 78%; height: 78%; transition: transform 0.8s var(--ease); }
+  .pc:hover .pc-sig { transform: rotate(-5deg) scale(1.03); }
+  .pc-photo-sm { position: absolute; right: 0.6rem; bottom: 0.6rem; width: 22%; height: auto; aspect-ratio: 1; object-fit: contain; background: #fff; border: var(--line); }
+  .pc-photo { position: absolute; inset: 0; display: grid; place-items: center; }
+  .pc-photo img { position: relative; width: 74%; height: 74%; object-fit: contain; mix-blend-mode: multiply; }
+  .pc-pict { position: absolute; width: 44%; color: var(--ink-32); }
+  .pc-photo:has(img) .pc-pict { display: none; }
+  .pc-tag { position: absolute; top: 0.6rem; left: 0.6rem; background: var(--hospitality); color: var(--paper); padding: 0.2rem 0.45rem; font-family: var(--f-mono); font-size: 0.62rem; letter-spacing: 0.08em; }
+  .pc-body { padding: 0.9rem 1rem 1rem; display: grid; gap: 0.3rem; align-content: start; }
+  .pc-name { font-family: var(--f-serif); font-size: 1.22rem; letter-spacing: -0.01em; line-height: 1.15; }
+  .pc-name button, .pc-name a { all: unset; cursor: pointer; }
+  .pc-name button:hover, .pc-name a:hover { text-decoration: underline; text-decoration-thickness: 1px; }
+  .pc-name a:focus-visible, .pc-name button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .pc-acc, .pc-sum { font-size: 0.78rem; color: var(--ink-56); display: flex; flex-wrap: wrap; gap: 0.2rem 0.7rem; line-height: 1.4; }
+  .pc-acc span { display: inline-flex; gap: 0.3rem; align-items: center; }
+  .pc-acc .dot { width: 0.45rem; height: 0.45rem; }
+  .pc-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.25rem 0.6rem; margin-top: 0.25rem; font-size: 0.95rem; }
+  .pc-opt { font-size: 0.78rem; color: var(--ink-56); }
+  .pc-stock { font-size: 0.75rem; color: var(--hospitality-text); margin-left: auto; }
+  .pc-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1rem; margin-top: 0.5rem; }
+  .pc-acts .btn { min-height: 2.75rem; }
+  .pc-acts .act { min-height: 2.75rem; }
+  @media (max-width: 520px) {
+    .pc-body { padding: 0.75rem 0.75rem 0.85rem; }
+    .pc-name { font-size: 1.05rem; }
+    .pc-stock { margin-left: 0; width: 100%; }
+    .pc-acts { gap: 0.25rem 0.75rem; }
+    .pc-acts .btn { width: 100%; padding-inline: 0.5rem; }
+  }
+</style>

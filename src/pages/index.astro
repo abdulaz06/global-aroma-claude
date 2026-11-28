@@ -9,7 +9,7 @@ import { scentBySlug } from '../lib/library';
 import { divisions } from '../data/divisions';
 import { company } from '../data/company';
 import { scents, clientScents } from '../lib/library';
-import { diffusers } from '../data/diffusers';
+import { shopProducts } from '../lib/catalog';
 
 import hotel from '../assets/concept/hotel-lobby.webp';
 import restaurant from '../assets/concept/restaurant.webp';
@@ -161,7 +161,7 @@ const momentSvg = signatureSVG(moment, { size: 640, mode: 'ink', ink: '#f2eee7',
         <div class="path reveal">
           <p class="label label-muted">Order online</p>
           <h3 class="h2">Oils &amp; diffusers</h3>
-          <p class="body-copy">{online} fragrances from the collection, plus more oils, and {diffusers.filter((d) => d.price).length} priced diffusers. Browse them here, then pay and check out on the Global Aroma store.</p>
+          <p class="body-copy">{online} fragrances from the collection, plus more oils, and {shopProducts.filter((p) => p.category === 'diffusers' && p.purchasable).length} priced diffusers. Browse them here, then pay and check out on the Global Aroma store.</p>
           <p class="path-how"><span class="act act-buy" aria-hidden="true">Buy online</span> marks anything sold in the store.</p>
           <a class="btn" href="/shop">Browse the shop</a>
         </div>

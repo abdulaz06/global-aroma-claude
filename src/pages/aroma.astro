@@ -5,13 +5,13 @@ import ScentCard from '../components/ScentCard.astro';
 import ScentDialog from '../components/ScentDialog.astro';
 import AddButton from '../components/AddButton.astro';
 import Pattern from '../components/Pattern.astro';
-import DiffuserCard from '../components/DiffuserCard.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { shopProducts } from '../lib/catalog';
 import { Image } from 'astro:assets';
 import { scents, scentBySlug, clientScents } from '../lib/library';
 import { signatureSVG } from '../lib/signature';
 import { ACCORDS, ACCORD_LABEL, PIGMENT } from '../lib/accords';
-import { storeOnlyOils } from '../data/scents';
-import { diffusers, formatAED } from '../data/diffusers';
+
 import { company } from '../data/company';
 import reed from '../assets/concept/reed-diffuser.webp';
 import oil from '../assets/concept/fragrance-oil.webp';
@@ -91,15 +91,7 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
         <p class="lib-more" data-more-wrap hidden><button class="btn btn-line" type="button" data-more>Show all {scents.length} fragrances</button></p>
       </div>
 
-      <details class="more-oils">
-        <summary><span class="h3">More oils in the online store</span><span class="label label-muted">{storeOnlyOils.length} oils · notes on the store</span></summary>
-        <ul class="oil-list">
-          {storeOnlyOils.map((o) => (
-            <li><span>{o.name.toLowerCase().replace(/(^|\s)\S/g, (m) => m.toUpperCase())}</span><span class="num muted">{formatAED(o.price)}</span>
-              <span class="oil-acts"><AddButton kind="oil" id={o.name} label={o.name} division="aroma" url={o.url} text="Add" /><a class="act act-buy" href={o.url} rel="noopener">Buy</a></span></li>
-          ))}
-        </ul>
-      </details>
+      <p class="lib-shop"><a class="btn btn-line" href="/shop?cat=oils">See every oil in the shop, with prices</a></p>
     </div>
   </section>
 
@@ -113,11 +105,9 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
         </div>
       </div>
       <ul class="dif-grid">
-        {diffusers.map((d) => (
-          <DiffuserCard d={d} />
-        ))}
+        {shopProducts.filter((p) => p.category === 'diffusers').sort((a, b) => (a.price ?? 1e9) - (b.price ?? 1e9)).map((p) => <ProductCard p={p} detailsHref="/shop" />)}
       </ul>
-      <p class="muted fine">Prices are as listed in the Global Aroma online store; checkout, delivery and payment happen on globalaroma.me.</p>
+      <p class="muted fine">Prices are those the Global Aroma store lists; checkout, delivery and payment happen on globalaroma.me. <a href="/shop?cat=diffusers">Compare all diffusers in the shop</a>.</p>
     </div>
   </section>
 
@@ -216,6 +206,7 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
   .lib-more { display: flex; justify-content: center; margin-top: 2.5rem; }
   .lib-more[hidden] { display: none; }
 
+  .lib-shop { margin-top: clamp(2.5rem, 5vw, 4rem); display: flex; justify-content: center; }
   .more-oils { margin-top: clamp(3rem, 6vw, 5rem); border-top: var(--line-strong); }
   .more-oils summary { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 1.25rem 0; cursor: pointer; list-style: none; flex-wrap: wrap; }
   .more-oils summary::-webkit-details-marker { display: none; }
@@ -226,7 +217,8 @@ const sorted = [...scents].sort((a, b) => a.title.localeCompare(b.title));
   .oil-acts { display: flex; gap: 0.9rem; }
   @media (max-width: 480px) { .oil-list { grid-template-columns: 1fr; } .oil-list li { grid-template-columns: 1fr auto; } .oil-acts { grid-column: 1 / -1; } }
 
-  .dif-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); border-top: var(--line); border-left: var(--line); }
+  .dif-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr)); border-top: var(--line); border-left: var(--line); }
+  @media (max-width: 560px) { .dif-grid { grid-template-columns: 1fr 1fr; } }
   .fine { font-size: 0.82rem; margin-top: 1.25rem; }
 
   .split { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 2rem; row-gap: 2rem; align-items: center; }
